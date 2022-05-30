@@ -1,0 +1,10 @@
+ARG OVS_VERSION
+FROM kubefay/base-ubuntu:${OVS_VERSION}
+
+LABEL maintainer="kubefay <projectkubefay-dev@googlegroups.com>"
+LABEL description="The Docker image to deploy the kubefay CNI."
+
+USER root
+
+COPY build/images/scripts/* /usr/local/bin/
+COPY bin/* /usr/local/bin/
