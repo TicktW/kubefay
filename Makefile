@@ -7,6 +7,8 @@ BINDIR             ?= $(CURDIR)/bin
 GO_FILES           := $(shell find . -type d -name '.cache' -prune -o -type f -name '*.go' -print)
 GOPATH             ?= $$($(GO) env GOPATH)
 DOCKER_CACHE       := $(CURDIR)/.cache
+BUILD_DIR          := $(CURDIR)/build
+DOCKER_IMG_DIR     := $(BUILD_DIR)/images
 ANTCTL_BINARY_NAME ?= antctl
 OVS_VERSION        := $(shell head -n 1 build/images/deps/ovs-version)
 GO_VERSION         := $(shell head -n 1 build/images/deps/go-version)
@@ -35,20 +37,30 @@ antrea-cni:
 .PHONY: build
 build: build-ubuntu
 
-.PHONY: ubuntu
-ubuntu:
-	@echo "===> Building antrea/antrea-ubuntu Docker image <==="
-ifneq ($(NO_PULL),)
-	docker build -t antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) -f build/images/Dockerfile.ubuntu $(DOCKER_BUILD_ARGS) .
-else
-	docker build --pull -t antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) -f build/images/Dockerfile.ubuntu $(DOCKER_BUILD_ARGS) .
-endif
-	docker tag antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) antrea/antrea-ubuntu
-	docker tag antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) projects.registry.vmware.com/antrea/antrea-ubuntu
-	docker tag antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) projects.registry.vmware.com/antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION)
-
 
 .PHONY: build-ubuntu
 build-ubuntu:
-	@echo "===> Building Antrea bins and antrea/antrea-ubuntu Docker image <==="
-	docker build -t antrea/antrea-ubuntu:$(DOCKER_IMG_VERSION) -f build/images/Dockerfile.build.ubuntu $(DOCKER_BUILD_ARGS) .
+	@echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
+	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) -f Dockerfile.build.ubuntu $(DOCKER_BUILD_ARGS)
+
+.PHONY: ubuntu
+ubuntu:
+	@echo "===> Building kubefay/kubefay-ubuntu Docker image <==="
+	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) -f Dockerfile.ubuntu $(DOCKER_BUILD_ARGS) .
+
+.PHONY: base-ubuntu
+base-ubuntu:
+	@echo "===> Building kubefay/base-ubuntu Docker image <==="
+	cd $(DOCKER_IMG_DIR)/base && ./build.sh && docker tag kubefay/base-ubuntu:$(DOCKER_IMG_VERSION) kubefay/base-ubuntu:latest
+
+.PHONY: ovs-ubuntu
+ovs-ubuntu:
+	@echo "===> Building kubefay/ovs-ubuntu Docker image <==="
+	cd $(DOCKER_IMG_DIR)/ovs && ./build.sh
+
+.PHONY: all
+all: ovs-ubuntu base-ubuntu ubuntu build-ubuntu
+
+.PHONY: cluster
+cluster:
+	kind delete cluster && kind create cluster --config build/cluster/kind-config.yaml && kind load docker-image kubefay/base-ubuntu:latest kubefay/base-ubuntu:latest

@@ -1,4 +1,5 @@
 ARG GO_VERSION
+ARG GOPROXY
 FROM ubuntu:20.04 as protoc
 
 RUN apt-get update && \
@@ -17,6 +18,7 @@ LABEL maintainer="kubefay <projectkubefay-dev@googlegroups.com>"
 LABEL description="A Docker image based on the golang image, which includes codegen tools."
 
 ENV GO111MODULE=on
+ENV GOPROXY=${GOPROXY}
 
 ARG K8S_VERSION=1.24.0
 # The k8s.io/kube-openapi repo does not have tag, using a workable commit hash.
@@ -24,17 +26,17 @@ ARG K8S_VERSION=1.24.0
 # correct K8s version).
 ARG KUBEOPENAPI_VERSION=v0.0.0-20220328201542-3ee0da9b0b42
 
-RUN go get k8s.io/code-generator/cmd/client-gen@kubernetes-$K8S_VERSION && \
-    go get k8s.io/code-generator/cmd/deepcopy-gen@kubernetes-$K8S_VERSION && \
-    go get k8s.io/code-generator/cmd/conversion-gen@kubernetes-$K8S_VERSION && \
-    go get k8s.io/code-generator/cmd/lister-gen@kubernetes-$K8S_VERSION && \
-    go get k8s.io/code-generator/cmd/informer-gen@kubernetes-$K8S_VERSION && \
-    go get k8s.io/kube-openapi/cmd/openapi-gen@$KUBEOPENAPI_VERSION && \
-    go get k8s.io/code-generator/cmd/go-to-protobuf@kubernetes-$K8S_VERSION && \
-    go get k8s.io/code-generator/cmd/go-to-protobuf/protoc-gen-gogo@kubernetes-$K8S_VERSION && \
-    go get github.com/golang/mock/mockgen@v1.4.4 && \
-    go get github.com/golang/protobuf/protoc-gen-go@v1.5.2 && \
-    go get golang.org/x/tools/cmd/goimports
+RUN go install k8s.io/code-generator/cmd/client-gen@kubernetes-$K8S_VERSION && \
+    go install k8s.io/code-generator/cmd/deepcopy-gen@kubernetes-$K8S_VERSION && \
+    go install k8s.io/code-generator/cmd/conversion-gen@kubernetes-$K8S_VERSION && \
+    go install k8s.io/code-generator/cmd/lister-gen@kubernetes-$K8S_VERSION && \
+    go install k8s.io/code-generator/cmd/informer-gen@kubernetes-$K8S_VERSION && \
+    go install k8s.io/kube-openapi/cmd/openapi-gen@$KUBEOPENAPI_VERSION && \
+    go install k8s.io/code-generator/cmd/go-to-protobuf@kubernetes-$K8S_VERSION && \
+    go install k8s.io/code-generator/cmd/go-to-protobuf/protoc-gen-gogo@kubernetes-$K8S_VERSION && \
+    go install github.com/golang/mock/mockgen@v1.4.4 && \
+    go install github.com/golang/protobuf/protoc-gen-go@v1.5.2 && \
+    go install golang.org/x/tools/cmd/goimports
 
 COPY --from=protoc /tmp/protoc/bin /usr/local/bin
 COPY --from=protoc /tmp/protoc/include /usr/local/include

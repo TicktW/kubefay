@@ -1,7 +1,13 @@
 make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/ubu/kubefay'
+make: Entering directory '/home/ubu/go/src/github.com/TicktW/kubefay'
  
-make: *** No rule to make target 'build-ubuntu', needed by 'build'.
-
-make: Leaving directory '/home/ubu/kubefay'
+echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
+docker build -t kubefay/kubefay-ubuntu: -f Dockerfile.build.ubuntu --build-arg OVS_VERSION=2.17.0 --build-arg GO_VERSION=1.18
+echo "===> Building kubefay/ovs-ubuntu Docker image <==="
+cd /home/ubu/go/src/github.com/TicktW/kubefay/build/images/ovs && ./build.sh
+echo "===> Building kubefay/base-ubuntu Docker image <==="
+cd /home/ubu/go/src/github.com/TicktW/kubefay/build/images/base && ./build.sh && docker tag kubefay/base-ubuntu: kubefay/base-ubuntu:latest
+echo "===> Building kubefay/kubefay-ubuntu Docker image <==="
+docker build -t kubefay/kubefay-ubuntu: -f Dockerfile.ubuntu --build-arg OVS_VERSION=2.17.0 --build-arg GO_VERSION=1.18 .
+make: Leaving directory '/home/ubu/go/src/github.com/TicktW/kubefay'
  

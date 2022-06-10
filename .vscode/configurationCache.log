@@ -1,1 +1,1 @@
-{"buildTargets":["all","antrea-agent","antrea-cni","antrea-controller","build","ubuntu"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
+{"buildTargets":["all","antrea-agent","antrea-cni","antrea-controller","base-ubuntu","build","build-ubuntu","cluster","ovs-ubuntu","ubuntu"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
