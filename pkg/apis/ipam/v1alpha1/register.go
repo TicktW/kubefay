@@ -1,3 +1,4 @@
+// MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
 package v1alpha1
 
 import (

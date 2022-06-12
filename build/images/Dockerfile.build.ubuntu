@@ -10,8 +10,8 @@ RUN go mod download
 
 COPY . /kubefay
 
-RUN make kubefay-agent kubefay-controller kubefay-cni antctl-linux
-RUN mv bin/antctl-linux bin/antctl
+# RUN make kubefay-agent kubefay-controller kubefay-cni antctl-linux
+# RUN mv bin/antctl-linux bin/antctl
 
 FROM kubefay/base-ubuntu:${OVS_VERSION}
 

@@ -16,6 +16,9 @@ GO_VERSION         := $(shell head -n 1 build/images/deps/go-version)
 DOCKER_BUILD_ARGS = --build-arg OVS_VERSION=$(OVS_VERSION)
 DOCKER_BUILD_ARGS += --build-arg GO_VERSION=$(GO_VERSION)
 
+include version.mk
+LDFLAGS += $(VERSION_LDFLAGS)
+
 .PHONY: all
 all: build
 
@@ -37,11 +40,16 @@ antrea-cni:
 .PHONY: build
 build: build-ubuntu
 
+.PHONY: codegen
+codegen:
+	@echo "===> generating code ... <==="
+	$(CURDIR)/hack/codegen.sh
 
 .PHONY: build-ubuntu
 build-ubuntu:
 	@echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
-	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) -f Dockerfile.build.ubuntu $(DOCKER_BUILD_ARGS)
+	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.ubuntu .
+	docker tag kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) kubefay/kubefay-ubuntu:latest
 
 .PHONY: ubuntu
 ubuntu:
@@ -63,4 +71,10 @@ all: ovs-ubuntu base-ubuntu ubuntu build-ubuntu
 
 .PHONY: cluster
 cluster:
-	kind delete cluster && kind create cluster --config build/cluster/kind-config.yaml && kind load docker-image kubefay/base-ubuntu:latest kubefay/base-ubuntu:latest
+	kind delete cluster && kind create cluster --config build/cluster/kind-config.yaml && kind load docker-image kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:latest
+
+.PHONY: bin
+bin:
+	@mkdir -p $(BINDIR)
+	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/...
+	./bin/fay-agent
