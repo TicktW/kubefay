@@ -59,7 +59,8 @@ ubuntu:
 .PHONY: base-ubuntu
 base-ubuntu:
 	@echo "===> Building kubefay/base-ubuntu Docker image <==="
-	cd $(DOCKER_IMG_DIR)/base && ./build.sh && docker tag kubefay/base-ubuntu:$(DOCKER_IMG_VERSION) kubefay/base-ubuntu:latest
+	cd $(DOCKER_IMG_DIR)/base && ./build.sh 
+	docker tag kubefay/base-ubuntu:$(OVS_VERSION) kubefay/base-ubuntu:latest
 
 .PHONY: ovs-ubuntu
 ovs-ubuntu:
@@ -71,10 +72,22 @@ all: ovs-ubuntu base-ubuntu ubuntu build-ubuntu
 
 .PHONY: cluster
 cluster:
-	kind delete cluster && kind create cluster --config build/cluster/kind-config.yaml && kind load docker-image kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:latest
+	kind delete cluster && kind create cluster --config build/cluster/kind-config.yaml 
+	sleep 5
+	kind get nodes | xargs ./hack/kind-fix-networking.sh
+	sleep 5
+	kind load docker-image kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:latest
+	sleep 5
 
 .PHONY: bin
 bin:
 	@mkdir -p $(BINDIR)
 	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/...
 	./bin/fay-agent
+
+.PHONY: dev
+dev: 
+	make base-ubuntu
+	make build-ubuntu
+	make cluster
+	kubectl apply -f build/deploy/fay-agent-build.yaml

@@ -1201,16 +1201,18 @@ spec:
         - name: kubefay-ovs
           image: "kubefay/kubefay-ubuntu:latest"
           imagePullPolicy: IfNotPresent
-          resources:
-            requests:
-              cpu: 200m
-          command: ["sleep"]
-          args:
-            - "1000000"
-          # command: ["start_ovs_netdev"]
+          # resources:
+          #   requests:
+          #     cpu: 200m
+          # command: ["sleep"]
           # args:
-          #   - "--log_file_max_size=100"
-          #   - "--log_file_max_num=4"
+          #   - "1000000"
+          command: 
+          - "start_ovs_netdev"
+          args:
+            - "--log_file_max_size=100"
+            - "--log_file_max_num=4"
+          #   - "--start-ovs-only"
           securityContext:
             # capabilities required by OVS daemons
             capabilities:
@@ -1227,10 +1229,10 @@ spec:
           #       - /bin/sh
           #       - -c
           #       - timeout 10 container_liveness_probe ovs
-          #   initialDelaySeconds: 5
-          #   timeoutSeconds: 10
-          #   periodSeconds: 10
-          #   failureThreshold: 5
+            # initialDelaySeconds: 5
+            # timeoutSeconds: 10
+            # periodSeconds: 10
+            # failureThreshold: 5
           volumeMounts:
           - name: host-var-run-kubefay
             mountPath: /var/run/openvswitch
@@ -1238,6 +1240,8 @@ spec:
           - name: host-var-log-kubefay
             mountPath: /var/log/openvswitch
             subPath: openvswitch
+          - mountPath: /dev/net/tun
+            name: dev-tun
       volumes:
         - name: kubefay-config
           configMap:
@@ -1272,3 +1276,7 @@ spec:
           hostPath:
             path: /run/xtables.lock
             type: FileOrCreate
+        - hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+          name: dev-tun

@@ -23,6 +23,7 @@ function fix_ovs_ctl {
 # See http://docs.openvswitch.org/en/latest/howto/userspace-tunneling/
 function add_br_phy {
     log_info $CONTAINER_NAME "Creating OVS br-phy bridge for netdev datapath type"
+
     ovs-vsctl --may-exist add-br br-phy \
               -- set Bridge br-phy datapath_type=netdev \
               -- br-set-external-id br-phy bridge-id br-phy \
@@ -52,7 +53,7 @@ function start_ovs {
     # with the netdev datapath. This is because the Node's network relies on the
     # forwarding of OVS so we cannot get Node, Pod, NetworkPolicy data from
     # Kubernetes API to install proper flows before removing flow-restore-wait.
-    /usr/share/openvswitch/scripts/ovs-ctl --system-id=random start --db-file=$OVS_DB_FILE
+    /usr/share/openvswitch/scripts/ovs-ctl --system-id=random --delete-bridges start --db-file=$OVS_DB_FILE
 }
 
 function stop_ovs {
@@ -75,7 +76,7 @@ function quit {
 
 # Do not trap EXIT as it would then ignore the "exit 0" statement in quit and
 # exit with code 128 + SIGNAL
-trap "quit" INT TERM
+trap "quit" INT TERM QUIT
 
 fix_ovs_ctl
 start_ovs

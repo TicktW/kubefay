@@ -38,8 +38,9 @@ function version_get() { test "$(printf '%s\n' "$@" | sort -rV | head -n 1)" == 
 function apply_patch() {
     commit_sha="$1"
     shift
-    curl -s "https://github.com/openvswitch/ovs/commit/$commit_sha.patch" | \
-        git apply "$@"
+    # curl -s "https://github.com/openvswitch/ovs/commit/$commit_sha.patch" | \
+    #     git apply "$@"
+    sleep 1
 }
 
 if version_lt "$OVS_VERSION" "2.13.0" || version_gt "$OVS_VERSION" "2.17.0"; then

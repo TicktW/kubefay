@@ -6,5 +6,6 @@ LABEL description="The Docker image to deploy the kubefay CNI."
 
 USER root
 
-COPY build/images/scripts/* /usr/local/bin/
+# COPY build/images/scripts/* /usr/local/bin/
+COPY build/scripts/* /usr/local/bin/
 COPY bin/* /usr/local/bin/
