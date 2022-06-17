@@ -1,8 +1,4 @@
-/*
- * @Author: TicktW wxjpython@gmail.com
- * @Description: MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
- */
-package ovs
+package engine
 
 import (
 	"fmt"
