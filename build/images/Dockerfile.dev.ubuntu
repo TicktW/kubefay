@@ -1,0 +1,30 @@
+ARG GO_VERSION
+ARG OVS_VERSION
+FROM golang:${GO_VERSION} as kubefay-build
+
+# WORKDIR /kubefay
+
+# COPY go.mod /kubefay/go.mod
+
+
+# COPY . /kubefay
+
+# RUN make kubefay-agent kubefay-controller kubefay-cni antctl-linux
+# RUN mv bin/antctl-linux bin/antctl
+
+FROM kubefay/base-ubuntu:${OVS_VERSION}
+
+LABEL maintainer="kubefay <projectkubefay-dev@googlegroups.com>"
+LABEL description="The Docker image to deploy the kubefay CNI."
+
+USER root
+
+COPY build/images/scripts/* /usr/local/bin/
+# COPY --from=kubefay-build /kubefay/bin/* /usr/local/bin/
+COPY --from=kubefay-build /usr/local/go/ /usr/local/go/
+
+ENV PATH=${PATH}:/usr/local/go/bin:/root/go/bin:/usr/share/openvswitch/scripts/
+
+# ENV GOPROXY="https://goproxy.cn,direct"
+
+# RUN go env -w GOPROXY="https://goproxy.cn,direct"

@@ -44,12 +44,22 @@ build: build-ubuntu
 codegen:
 	@echo "===> generating code ... <==="
 	$(CURDIR)/hack/codegen.sh
+# protoc --go_out=plugins=grpc:. pkg/apis/cni/v1beta1/cni.proto
+
+.PHONY: rpcgen
+rpcgen:
+	protoc --go_out=plugins=grpc:. pkg/rpc/cni/v1beta1/cni.proto
 
 .PHONY: build-ubuntu
 build-ubuntu:
 	@echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
 	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.ubuntu .
 	docker tag kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) kubefay/kubefay-ubuntu:latest
+
+dev-ubuntu:
+	@echo "===> Dev env setup <==="
+	docker build -t kubefay/kubefay-ubuntu-dev:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.dev.ubuntu .
+	docker tag kubefay/kubefay-ubuntu-dev:$(DOCKER_IMG_VERSION) kubefay/kubefay-ubuntu-dev:latest
 
 .PHONY: ubuntu
 ubuntu:
@@ -91,3 +101,7 @@ dev:
 	make build-ubuntu
 	make cluster
 	kubectl apply -f build/deploy/fay-agent-build.yaml
+
+.PHONY: run-dev-docker
+run-dev-docker:
+	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash

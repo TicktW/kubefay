@@ -11,6 +11,9 @@ RUN PROTOBUF_VERSION=3.0.2; ZIPNAME="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
   unzip "${ZIPNAME}" && \
   chmod -R +rX /tmp/protoc
 
+# should be replaced by this command
+#  apt install -y protobuf-compiler
+
 
 FROM golang:${GO_VERSION}
 

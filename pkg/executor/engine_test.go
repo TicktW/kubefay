@@ -1,6 +1,7 @@
-package engine
+package executor
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -24,6 +25,12 @@ func TestRunCmd(t *testing.T) {
 			res, err := RunCmd("")
 			So(res, ShouldBeBlank)
 			So(err, ShouldBeError)
+		})
+
+		Convey("Run ovs", func() {
+			res, _ := RunCmd("ovs-vsctl -h")
+			fmt.Println(res)
+
 		})
 	})
 	// res, err := RunCmd("l")
