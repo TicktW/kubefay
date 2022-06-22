@@ -2,12 +2,10 @@ package vsctl
 
 import "github.com/TicktW/kubefay/pkg/executor"
 
-const BASECOMMAND = "ovs-vsctl"
-
-var vsctlExecutor *executor.Executor
+const VSCTLNAME = "ovs-vsctl"
 
 func init() {
-	if vsctlExecutor == nil {
-		vsctlExecutor = executor.NewEngine(BASECOMMAND, BASECOMMAND)
-	}
+	baseOvsctl := executor.NewExecutor(VSCTLNAME)
+	LockOvsctl := executor.NewLockExecutor(baseOvsctl)
+	executor.AgentPool.Register(LockOvsctl)
 }
