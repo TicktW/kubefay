@@ -1,18 +1,24 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/TicktW/kubefay/pkg/agent/config"
+	"github.com/TicktW/kubefay/pkg/agent/controller/noderoute"
+	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
+	"github.com/TicktW/kubefay/pkg/agent/openflow"
+	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
 	"github.com/TicktW/kubefay/pkg/agent/types"
 	"github.com/TicktW/kubefay/pkg/agent/util"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
-	"github.com/TicktW/kubefay/pkg/agent/openflow"
-	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
+	"github.com/TicktW/kubefay/pkg/utils/env"
 	"github.com/containernetworking/plugins/pkg/ip"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
 )
@@ -47,9 +53,10 @@ type Agent struct {
 	ovsBridge           string
 	hostGateway         string // name of gateway port on the OVS bridge
 	mtu                 int
-	defaultTunnelType   string
+	tunnelType   string
 	defaultSubnetCIDRv4 string
 	serviceCIDR         *net.IPNet // K8s Service ClusterIP CIDR
+	nodeConfig          *config.NodeConfig
 	// networkReadyCh      chan<- struct{}
 }
 
@@ -60,7 +67,7 @@ func NewAgent(
 	ovsBridge string,
 	hostGateway string,
 	mtu int,
-	defaultTunnelType string,
+	tunnelType string,
 	defaultSubnetCIDRv4 string,
 	serviceCIDR *net.IPNet,
 ) *Agent {
@@ -71,7 +78,7 @@ func NewAgent(
 		ovsBridge:           ovsBridge,
 		hostGateway:         hostGateway,
 		mtu:                 mtu,
-		defaultTunnelType:   defaultTunnelType,
+		tunnelType:   tunnelType,
 		defaultSubnetCIDRv4: defaultSubnetCIDRv4,
 		serviceCIDR:         serviceCIDR,
 	}
@@ -83,9 +90,9 @@ func (agent *Agent) Initialize() error {
 	// wg is used to wait for the asynchronous initialization.
 	var wg sync.WaitGroup
 
-	// if err := agent.initNodeLocalConfig(); err != nil {
-	// 	return err
-	// }
+	if err := agent.initNodeLocalConfig(); err != nil {
+		return err
+	}
 
 	// if err := agent.initializeIPSec(); err != nil {
 	// 	return err
@@ -103,6 +110,61 @@ func (agent *Agent) Initialize() error {
 	return nil
 }
 
+// initInterfaceStore initializes InterfaceStore with all OVS ports retrieved
+// from the OVS bridge.
+func (agent *Agent) initInterfaceStore() error {
+	ovsPorts, err := agent.ovsBridgeClient.GetPortList()
+	if err != nil {
+		klog.Errorf("Failed to list OVS ports: %v", err)
+		return err
+	}
+
+	ifaceList := make([]*interfacestore.InterfaceConfig, 0, len(ovsPorts))
+	for index := range ovsPorts {
+		port := &ovsPorts[index]
+		ovsPort := &interfacestore.OVSPortConfig{
+			PortUUID: port.UUID,
+			OFPort:   port.OFPort}
+		var intf *interfacestore.InterfaceConfig
+		switch {
+		case port.OFPort == config.HostGatewayOFPort:
+			intf = &interfacestore.InterfaceConfig{
+				Type:          interfacestore.GatewayInterface,
+				InterfaceName: port.Name,
+				OVSPortConfig: ovsPort}
+			if intf.InterfaceName != agent.hostGateway {
+				klog.Warningf("The discovered gateway interface name %s is different from the configured value: %s",
+					intf.InterfaceName, agent.hostGateway)
+				// Set the gateway interface name to the discovered name.
+				agent.hostGateway = intf.InterfaceName
+			}
+		case port.IFType == ovsconfig.GeneveTunnel:
+			fallthrough
+		case port.IFType == ovsconfig.VXLANTunnel:
+			fallthrough
+		case port.IFType == ovsconfig.GRETunnel:
+			fallthrough
+		case port.IFType == ovsconfig.STTTunnel:
+			intf = noderoute.ParseTunnelInterfaceConfig(port, ovsPort)
+			if intf != nil && port.OFPort == config.DefaultTunOFPort &&
+				intf.InterfaceName != agent.nodeConfig.DefaultTunName {
+				klog.Infof("The discovered default tunnel interface name %s is different from the default value: %s",
+					intf.InterfaceName, agent.nodeConfig.DefaultTunName)
+				// Set the default tunnel interface name to the discovered name.
+				agent.nodeConfig.DefaultTunName = intf.InterfaceName
+			}
+		default:
+			// The port should be for a container interface.
+			intf = cniserver.ParseOVSPortInterfaceConfig(port, ovsPort)
+		}
+		if intf != nil {
+			ifaceList = append(ifaceList, intf)
+		}
+	}
+
+	agent.ifaceStore.Initialize(ifaceList)
+	return nil
+}
 // setupOVSBridge sets up the OVS bridge and create host gateway interface and tunnel port
 func (agent *Agent) setupOVSBridge() error {
 	if err := agent.ovsBridgeClient.Create(); err != nil {
@@ -119,7 +181,7 @@ func (agent *Agent) setupOVSBridge() error {
 	// 	return err
 	// }
 
-	if err := agent.setupDefaultTunnelInterface(defaultTunInterfaceName, ovsconfig.TunnelType(agent.defaultTunnelType)); err != nil {
+	if err := agent.setupDefaultTunnelInterface(defaultTunInterfaceName, ovsconfig.TunnelType(agent.tunnelType)); err != nil {
 		return err
 	}
 
@@ -200,22 +262,9 @@ func (agent *Agent) initOpenFlowPipeline() error {
 	roundInfo := getRoundInfo(agent.ovsBridgeClient)
 
 	// Set up all basic flows.
-	ofConnCh, err := agent.ofClient.Initialize(roundInfo, agent.nodeConfig, agent.networkConfig.TrafficEncapMode)
+	ofConnCh, err := agent.ofClient.Initialize(roundInfo)
 	if err != nil {
 		klog.Errorf("Failed to initialize openflow client: %v", err)
-		return err
-	}
-
-	// On Windows platform, host network flows are needed for host traffic.
-	if err := agent.initHostNetworkFlows(); err != nil {
-		klog.Errorf("Failed to install openflow entries for host network: %v", err)
-		return err
-	}
-
-	// On Windows platform, extra flows are needed to perform SNAT for the
-	// traffic to external network.
-	if err := agent.initExternalConnectivityFlows(); err != nil {
-		klog.Errorf("Failed to install openflow entries for external connectivity: %v", err)
 		return err
 	}
 
@@ -341,4 +390,50 @@ func getLastRoundNum(bridgeClient ovsconfig.OVSBridgeClient) (uint64, error) {
 		return 0, fmt.Errorf("error parsing last round number %v: %w", num, err)
 	}
 	return num, nil
+}
+
+// initNodeLocalConfig retrieves node's subnet CIDR from node.spec.PodCIDR, which is used for IPAM and setup
+// host gateway interface.
+func (agent *Agent) initNodeLocalConfig() error {
+	nodeName, err := env.GetNodeName()
+	if err != nil {
+		return err
+	}
+	node, err := agent.client.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+	if err != nil {
+		klog.Errorf("Failed to get node from K8s with name %s: %v", nodeName, err)
+		return err
+	}
+
+	ipAddr, err := noderoute.GetNodeAddr(node)
+	if err != nil {
+		return fmt.Errorf("failed to obtain local IP address from k8s: %w", err)
+	}
+	localAddr, _, err := util.GetIPNetDeviceFromIP(ipAddr)
+	if err != nil {
+		return fmt.Errorf("failed to get local IPNet:  %v", err)
+	}
+
+	agent.nodeConfig = &config.NodeConfig{
+		Name:            nodeName,
+		OVSBridge:       agent.ovsBridge,
+		DefaultTunName:  defaultTunInterfaceName,
+		NodeIPAddr:      localAddr,
+		NodeMTU: agent.mtu,
+		}
+
+	klog.Infof("Setting Node MTU=%d", agent.mtu)
+
+	// TODO: should use more elegant method
+	// need to set default subnet
+	// TODO default subnet from CRD/conf
+	// var localSubnet *net.IPNet
+	klog.Infof("Antrea IPAM enabled, CIDR: %s", agent.defaultSubnetCIDRv4)
+	_, localSubnet, err := net.ParseCIDR(agent.defaultSubnetCIDRv4)
+	if err != nil {
+		return err
+	}
+	agent.nodeConfig.PodIPv4CIDR = localSubnet
+	return nil
+
 }

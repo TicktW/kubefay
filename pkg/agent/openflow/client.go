@@ -39,7 +39,7 @@ type Client interface {
 	// be called to ensure that the set of OVS flows is correct. All flows programmed in the
 	// switch which match the current round number will be deleted before any new flow is
 	// installed.
-	Initialize(roundInfo types.RoundInfo, config *config.NodeConfig, encapMode config.TrafficEncapModeType) (<-chan struct{}, error)
+	Initialize(roundInfo types.RoundInfo) (<-chan struct{}, error)
 
 	// InstallGatewayFlows sets up flows related to an OVS gateway port, the gateway must exist.
 	InstallGatewayFlows() error
@@ -659,16 +659,16 @@ func (c *client) initialize() error {
 	return nil
 }
 
-func (c *client) Initialize(roundInfo types.RoundInfo, nodeConfig *config.NodeConfig, encapMode config.TrafficEncapModeType) (<-chan struct{}, error) {
-	c.nodeConfig = nodeConfig
-	c.encapMode = encapMode
+func (c *client) Initialize(roundInfo types.RoundInfo) (<-chan struct{}, error) {
+	// c.nodeConfig = nodeConfig
 
-	if config.IsIPv4Enabled(nodeConfig, encapMode) {
-		c.ipProtocols = append(c.ipProtocols, binding.ProtocolIP)
-	}
-	if config.IsIPv6Enabled(nodeConfig, encapMode) {
-		c.ipProtocols = append(c.ipProtocols, binding.ProtocolIPv6)
-	}
+	// TODO ipv4 and ipv6
+	// if config.IsIPv4Enabled(nodeConfig, encapMode) {
+	c.ipProtocols = append(c.ipProtocols, binding.ProtocolIP)
+	// }
+	// if config.IsIPv6Enabled(nodeConfig, encapMode) {
+	// 	c.ipProtocols = append(c.ipProtocols, binding.ProtocolIPv6)
+	// }
 
 	// Initiate connections to target OFswitch, and create tables on the switch.
 	connCh := make(chan struct{})

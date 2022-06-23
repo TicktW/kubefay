@@ -91,8 +91,6 @@ type NodeConfig struct {
 	NodeMTU int
 	// The config of the gateway interface on the OVS bridge.
 	GatewayConfig *GatewayConfig
-	// The config of the OVS bridge uplink interface. Only for Windows Node.
-	UplinkNetConfig *AdapterNetConfig
 }
 
 func (n *NodeConfig) String() string {
