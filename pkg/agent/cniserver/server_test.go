@@ -41,7 +41,7 @@ import (
 	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
 	openflowtest "github.com/TicktW/kubefay/pkg/agent/openflow/testing"
 	"github.com/TicktW/kubefay/pkg/agent/util"
-	cnipb "github.com/TicktW/kubefay/pkg/apis/cni/v1beta1"
+	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
 	"github.com/TicktW/kubefay/pkg/cni"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
 	ovsconfigtest "github.com/TicktW/kubefay/pkg/ovs/ovsconfig/testing"

@@ -29,12 +29,12 @@ import (
 	"github.com/containernetworking/plugins/pkg/ipam"
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/vishvananda/netlink"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/TicktW/kubefay/pkg/agent/util"
 	"github.com/TicktW/kubefay/pkg/agent/util/arping"
 	"github.com/TicktW/kubefay/pkg/agent/util/ethtool"
-	cnipb "github.com/TicktW/kubefay/pkg/apis/cni/v1beta1"
+	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
 )
 
