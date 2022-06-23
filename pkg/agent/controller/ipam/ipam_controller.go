@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware-tanzu/antrea/pkg/agent/cniserver"
-	"github.com/vmware-tanzu/antrea/pkg/agent/config"
-	"github.com/vmware-tanzu/antrea/pkg/agent/util/iptables"
+	"github.com/TicktW/kubefay/pkg/agent/cniserver"
+	"github.com/TicktW/kubefay/pkg/agent/config"
+	"github.com/TicktW/kubefay/pkg/agent/util/iptables"
 
-	"github.com/vmware-tanzu/antrea/pkg/agent/openflow"
+	"github.com/TicktW/kubefay/pkg/agent/openflow"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -17,15 +17,15 @@ import (
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/vmware-tanzu/antrea/pkg/agent/controller/noderoute"
-	"github.com/vmware-tanzu/antrea/pkg/agent/interfacestore"
-	"github.com/vmware-tanzu/antrea/pkg/ovs/ovsconfig"
+	"github.com/TicktW/kubefay/pkg/agent/controller/noderoute"
+	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
+	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	crdclients "github.com/vmware-tanzu/antrea/pkg/client/clientset/versioned"
-	crdinformers "github.com/vmware-tanzu/antrea/pkg/client/informers/externalversions/ipam/v1alpha1"
-	crdlister "github.com/vmware-tanzu/antrea/pkg/client/listers/ipam/v1alpha1"
+	crdclients "github.com/TicktW/kubefay/pkg/client/clientset/versioned"
+	crdinformers "github.com/TicktW/kubefay/pkg/client/informers/externalversions/ipam/v1alpha1"
+	crdlister "github.com/TicktW/kubefay/pkg/client/listers/ipam/v1alpha1"
 )
 
 const controllerName = "ipam-controller"

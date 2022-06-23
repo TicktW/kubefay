@@ -456,50 +456,24 @@ func (c *Controller) addNodeRoute(nodeName string, node *corev1.Node) error {
 		podCIDRs = append(podCIDRs, peerPodCIDR)
 	}
 
-	peerNodeIP, err := GetNodeAddr(node)
-	if err != nil {
-		klog.Errorf("Failed to retrieve IP address of Node %s: %v", nodeName, err)
-		return nil
-	}
+	// peerNodeIP, err := GetNodeAddr(node)
+	// if err != nil {
+	// 	klog.Errorf("Failed to retrieve IP address of Node %s: %v", nodeName, err)
+	// 	return nil
+	// }
 
-	ipsecTunOFPort := int32(0)
-	if c.networkConfig.EnableIPSecTunnel {
-		// Create a separate tunnel port for the Node, as OVS IPSec monitor needs to
-		// read PSK and remote IP from the Node's tunnel interface to create IPSec
-		// security policies.
-		if ipsecTunOFPort, err = c.createIPSecTunnelPort(nodeName, peerNodeIP); err != nil {
-			return err
-		}
-	}
+	// ipsecTunOFPort := int32(0)
+	// if c.networkConfig.EnableIPSecTunnel {
+	// 	// Create a separate tunnel port for the Node, as OVS IPSec monitor needs to
+	// 	// read PSK and remote IP from the Node's tunnel interface to create IPSec
+	// 	// security policies.
+	// 	if ipsecTunOFPort, err = c.createIPSecTunnelPort(nodeName, peerNodeIP); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	// for Antrea IPAM, we add the routes at ipam controller
-	if features.DefaultFeatureGate.Enabled(features.AntreaIPAM) {
-		return nil
-	}
-
-	err = c.ofClient.InstallNodeFlows(
-		nodeName,
-		peerConfig,
-		peerNodeIP,
-		uint32(ipsecTunOFPort))
-	if err != nil {
-		return fmt.Errorf("failed to install flows to Node %s: %v", nodeName, err)
-	}
-
-	var peerGatewayIPs []net.IP
-	for peerPodCIDR, peerGatewayIP := range peerConfig {
-		if err := c.routeClient.AddRoutes(peerPodCIDR, peerNodeIP, peerGatewayIP); err != nil {
-			return err
-		}
-		peerGatewayIPs = append(peerGatewayIPs, peerGatewayIP)
-	}
-	c.installedNodes.Add(&nodeRouteInfo{
-		nodeName:  nodeName,
-		podCIDRs:  podCIDRs,
-		nodeIP:    peerNodeIP,
-		gatewayIP: peerGatewayIPs,
-	})
-	return err
+	return nil
 }
 
 func getPodCIDRsOnNode(node *corev1.Node) []string {

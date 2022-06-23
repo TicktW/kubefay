@@ -21,7 +21,7 @@ import (
 
 	"github.com/TicktW/kubefay/pkg/agent/metrics"
 	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/util/k8s"
+	"github.com/TicktW/kubefay/pkg/utils/k8s"
 )
 
 const (

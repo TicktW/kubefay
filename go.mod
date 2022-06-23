@@ -3,6 +3,7 @@ module github.com/TicktW/kubefay
 go 1.18
 
 require (
+	github.com/Mellanox/sriovnet v1.0.1
 	antrea.io/antrea v1.7.0
 	antrea.io/libOpenflow v0.6.2
 	antrea.io/ofnet v0.5.7

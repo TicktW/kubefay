@@ -7,21 +7,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TicktW/kubefay/pkg/agent/config"
+	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
+	"github.com/TicktW/kubefay/pkg/agent/util"
 	"github.com/containernetworking/plugins/pkg/ip"
 	"github.com/vishvananda/netlink"
-	"github.com/vmware-tanzu/antrea/pkg/agent/config"
-	"github.com/vmware-tanzu/antrea/pkg/agent/interfacestore"
-	"github.com/vmware-tanzu/antrea/pkg/agent/util"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/vmware-tanzu/antrea/pkg/apis/ipam/v1alpha1"
+	"github.com/TicktW/kubefay/pkg/apis/ipam/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/vmware-tanzu/antrea/pkg/util/env"
+	"github.com/TicktW/kubefay/pkg/utils/env"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
