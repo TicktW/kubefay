@@ -283,25 +283,27 @@ func (agent *Agent) initOpenFlowPipeline() error {
 		}
 	}
 
-	if !agent.enableProxy {
-		// Set up flow entries to enable Service connectivity. Upstream kube-proxy is leveraged to
-		// provide load-balancing, and the flows installed by this method ensure that traffic sent
-		// from local Pods to any Service address can be forwarded to the host gateway interface
-		// correctly. Otherwise packets might be dropped by egress rules before they are DNATed to
-		// backend Pods.
-		if err := agent.ofClient.InstallClusterServiceCIDRFlows([]*net.IPNet{agent.serviceCIDR, agent.serviceCIDRv6}); err != nil {
-			klog.Errorf("Failed to setup OpenFlow entries for Service CIDRs: %v", err)
-			return err
-		}
-	} else {
-		// Set up flow entries to enable Service connectivity. The agent proxy handles
-		// ClusterIP Services while the upstream kube-proxy is leveraged to handle
-		// any other kinds of Services.
-		if err := agent.ofClient.InstallClusterServiceFlows(); err != nil {
-			klog.Errorf("Failed to setup default OpenFlow entries for ClusterIP Services: %v", err)
-			return err
-		}
+	// if !agent.enableProxy {
+	// 	// Set up flow entries to enable Service connectivity. Upstream kube-proxy is leveraged to
+	// 	// provide load-balancing, and the flows installed by this method ensure that traffic sent
+	// 	// from local Pods to any Service address can be forwarded to the host gateway interface
+	// 	// correctly. Otherwise packets might be dropped by egress rules before they are DNATed to
+	// 	// backend Pods.
+	// 	if err := agent.ofClient.InstallClusterServiceCIDRFlows([]*net.IPNet{agent.serviceCIDR, agent.serviceCIDRv6}); err != nil {
+	// 		klog.Errorf("Failed to setup OpenFlow entries for Service CIDRs: %v", err)
+	// 		return err
+	// 	}
+	// } else {
+
+
+	// Set up flow entries to enable Service connectivity. The agent proxy handles
+	// ClusterIP Services while the upstream kube-proxy is leveraged to handle
+	// any other kinds of Services.
+	if err := agent.ofClient.InstallClusterServiceFlows(); err != nil {
+		klog.Errorf("Failed to setup default OpenFlow entries for ClusterIP Services: %v", err)
+		return err
 	}
+	// }
 
 	go func() {
 		// Delete stale flows from previous round. We need to wait long enough to ensure
