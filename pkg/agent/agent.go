@@ -8,17 +8,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TicktW/kubefay/pkg/agent/cniserver"
 	"github.com/TicktW/kubefay/pkg/agent/config"
 	"github.com/TicktW/kubefay/pkg/agent/controller/noderoute"
 	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
 	"github.com/TicktW/kubefay/pkg/agent/openflow"
 	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
+	"github.com/TicktW/kubefay/pkg/agent/route"
 	"github.com/TicktW/kubefay/pkg/agent/types"
 	"github.com/TicktW/kubefay/pkg/agent/util"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
 	"github.com/TicktW/kubefay/pkg/utils/env"
 	"github.com/containernetworking/plugins/pkg/ip"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
 )
@@ -50,6 +53,7 @@ type Agent struct {
 	client              clientset.Interface
 	ovsBridgeClient     ovsconfig.OVSBridgeClient
 	ofClient            openflow.Client
+	ifaceStore interfacestore.InterfaceStore
 	ovsBridge           string
 	hostGateway         string // name of gateway port on the OVS bridge
 	mtu                 int
@@ -57,6 +61,7 @@ type Agent struct {
 	defaultSubnetCIDRv4 string
 	serviceCIDR         *net.IPNet // K8s Service ClusterIP CIDR
 	nodeConfig          *config.NodeConfig
+	routeClient         route.Interface
 	// networkReadyCh      chan<- struct{}
 }
 
@@ -64,23 +69,27 @@ func NewAgent(
 	client clientset.Interface,
 	ovsBridgeClient ovsconfig.OVSBridgeClient,
 	ofClient openflow.Client,
+	ifaceStore interfacestore.InterfaceStore,
 	ovsBridge string,
 	hostGateway string,
 	mtu int,
 	tunnelType string,
 	defaultSubnetCIDRv4 string,
 	serviceCIDR *net.IPNet,
+	routeClient route.Interface,
 ) *Agent {
 	return &Agent{
 		client:              client,
 		ovsBridgeClient:     ovsBridgeClient,
 		ofClient:            ofClient,
 		ovsBridge:           ovsBridge,
+		ifaceStore: ifaceStore,
 		hostGateway:         hostGateway,
 		mtu:                 mtu,
 		tunnelType:   tunnelType,
 		defaultSubnetCIDRv4: defaultSubnetCIDRv4,
 		serviceCIDR:         serviceCIDR,
+		routeClient:         routeClient,
 	}
 
 }
@@ -99,6 +108,13 @@ func (agent *Agent) Initialize() error {
 	// }
 
 	if err := agent.setupOVSBridge(); err != nil {
+		return err
+	}
+
+	wg.Add(1)
+	// routeClient.Initialize() should be after i.setupOVSBridge() which
+	// creates the host gateway interface.
+	if err := agent.routeClient.Initialize(agent.nodeConfig, wg.Done); err != nil {
 		return err
 	}
 
@@ -176,10 +192,10 @@ func (agent *Agent) setupOVSBridge() error {
 	// 	return err
 	// }
 
-	// // Initialize interface cache
-	// if err := agent.initInterfaceStore(); err != nil {
-	// 	return err
-	// }
+	// Initialize interface cache
+	if err := agent.initInterfaceStore(); err != nil {
+		return err
+	}
 
 	if err := agent.setupDefaultTunnelInterface(defaultTunInterfaceName, ovsconfig.TunnelType(agent.tunnelType)); err != nil {
 		return err
@@ -209,6 +225,20 @@ func (agent *Agent) setupDefaultTunnelInterface(tunnelPortName string, tunnelTyp
 // setupGatewayInterface creates the host gateway interface which is an internal port on OVS. The ofport for host
 // gateway interface is predefined, so invoke CreateInternalPort with a specific ofport_request
 func (agent *Agent) setupGatewayInterface() error {
+	gatewayIface, portExists := agent.ifaceStore.GetInterface(agent.hostGateway)
+	if !portExists {
+		klog.V(2).Infof("Creating gateway port %s on OVS bridge", agent.hostGateway)
+		gwPortUUID, err := agent.ovsBridgeClient.CreateInternalPort(agent.hostGateway, config.HostGatewayOFPort, nil)
+		if err != nil {
+			klog.Errorf("Failed to create gateway port %s on OVS bridge: %v", agent.hostGateway, err)
+			return err
+		}
+		gatewayIface = interfacestore.NewGatewayInterface(agent.hostGateway)
+		gatewayIface.OVSPortConfig = &interfacestore.OVSPortConfig{PortUUID: gwPortUUID, OFPort: config.HostGatewayOFPort}
+		agent.ifaceStore.AddInterface(gatewayIface)
+	} else {
+		klog.V(2).Infof("Gateway port %s already exists on OVS bridge", agent.hostGateway)
+	}
 
 	// Idempotent operation to set the gateway's MTU: we perform this operation regardless of
 	// whether or not the gateway interface already exists, as the desired MTU may change across
@@ -217,13 +247,13 @@ func (agent *Agent) setupGatewayInterface() error {
 
 	agent.ovsBridgeClient.SetInterfaceMTU(agent.hostGateway, agent.mtu)
 
-	// var gwMAC net.HardwareAddr
+	var gwMAC net.HardwareAddr
 	var gwLinkIdx int
 	var err error
 	// Host link might not be queried at once after creating OVS internal port; retry max 5 times with 1s
 	// delay each time to ensure the link is ready.
 	for retry := 0; retry < maxRetryForHostLink; retry++ {
-		_, gwLinkIdx, err = util.SetLinkUp(agent.hostGateway)
+		gwMAC, gwLinkIdx, err = util.SetLinkUp(agent.hostGateway)
 		if err == nil {
 			break
 		}
@@ -247,10 +277,10 @@ func (agent *Agent) setupGatewayInterface() error {
 		klog.Errorln(parseErr)
 		return parseErr
 	}
-
 	subnetID := defaultNet.IP.Mask(defaultNet.Mask)
 	gwIP := &net.IPNet{IP: ip.NextIP(subnetID), Mask: defaultNet.Mask}
 
+	agent.nodeConfig.GatewayConfig = &config.GatewayConfig{Name: agent.hostGateway, MAC: gwMAC, LinkIndex: gwLinkIdx, IPv4: gwIP.IP}
 	if err := util.ConfigureLinkAddress(gwLinkIdx, gwIP); err != nil {
 		return err
 	}
@@ -275,12 +305,10 @@ func (agent *Agent) initOpenFlowPipeline() error {
 		return err
 	}
 
-	if agent.networkConfig.TrafficEncapMode.SupportsEncap() {
-		// Set up flow entries for the default tunnel port interface.
-		if err := agent.ofClient.InstallDefaultTunnelFlows(); err != nil {
-			klog.Errorf("Failed to setup openflow entries for tunnel interface: %v", err)
-			return err
-		}
+	// Set up flow entries for the default tunnel port interface.
+	if err := agent.ofClient.InstallDefaultTunnelFlows(); err != nil {
+		klog.Errorf("Failed to setup openflow entries for tunnel interface: %v", err)
+		return err
 	}
 
 	// if !agent.enableProxy {
@@ -356,6 +384,20 @@ func (agent *Agent) initOpenFlowPipeline() error {
 	return nil
 }
 
+func (agent *Agent) FlowRestoreComplete() error {
+	// ovs-vswitchd is started with flow-restore-wait set to true for the following reasons:
+	// 1. It prevents packets from being mishandled by ovs-vswitchd in its default fashion,
+	//    which could affect existing connections' conntrack state and cause issues like #625.
+	// 2. It prevents ovs-vswitchd from flushing or expiring previously set datapath flows,
+	//    so existing connections can achieve 0 downtime during OVS restart.
+	// As a result, we remove the config here after restoring necessary flows.
+	klog.Info("Cleaning up flow-restore-wait config")
+	if err := agent.ovsBridgeClient.DeleteOVSOtherConfig(map[string]interface{}{"flow-restore-wait": "true"}); err != nil {
+		return fmt.Errorf("error when cleaning up flow-restore-wait config: %v", err)
+	}
+	klog.Info("Cleaned up flow-restore-wait config")
+	return nil
+}
 func getRoundInfo(bridgeClient ovsconfig.OVSBridgeClient) types.RoundInfo {
 	roundInfo := types.RoundInfo{}
 	num, err := getLastRoundNum(bridgeClient)
@@ -438,4 +480,41 @@ func (agent *Agent) initNodeLocalConfig() error {
 	agent.nodeConfig.PodIPv4CIDR = localSubnet
 	return nil
 
+}
+
+// persistRoundNum will save the provided round number to OVSDB as an external ID. To account for
+// transient failures, this (synchronous) function includes a retry mechanism.
+func persistRoundNum(num uint64, bridgeClient ovsconfig.OVSBridgeClient, interval time.Duration, maxRetries int) {
+	klog.Infof("Persisting round number %d to OVSDB", num)
+	retry := 0
+	for {
+		err := saveRoundNum(num, bridgeClient)
+		if err == nil {
+			klog.Infof("Round number %d was persisted to OVSDB", num)
+			return // success
+		}
+		klog.Errorf("Error when writing round number to OVSDB: %v", err)
+		if retry >= maxRetries {
+			break
+		}
+		time.Sleep(interval)
+	}
+	klog.Errorf("Unable to persist round number %d to OVSDB after %d tries", num, maxRetries+1)
+}
+
+func saveRoundNum(num uint64, bridgeClient ovsconfig.OVSBridgeClient) error {
+	extIDs, ovsCfgErr := bridgeClient.GetExternalIDs()
+	if ovsCfgErr != nil {
+		return fmt.Errorf("error getting external IDs: %w", ovsCfgErr)
+	}
+	updatedExtIDs := make(map[string]interface{})
+	for k, v := range extIDs {
+		updatedExtIDs[k] = v
+	}
+	updatedExtIDs[roundNumKey] = fmt.Sprint(num)
+	return bridgeClient.SetExternalIDs(updatedExtIDs)
+}
+
+func (agent *Agent) GetNodeConfig() *config.NodeConfig {
+	return agent.nodeConfig
 }

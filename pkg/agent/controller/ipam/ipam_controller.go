@@ -80,7 +80,7 @@ type Controller struct {
 
 	nodeConfig *config.NodeConfig
 
-	networkConfig *config.NetworkConfig
+	// networkConfig *config.NetworkConfig
 }
 
 // NewController will create a controller instance
@@ -93,13 +93,15 @@ func NewController(
 	ovsBridgeClient ovsconfig.OVSBridgeClient,
 	ofClient openflow.Client,
 	nodeConfig *config.NodeConfig,
-	networkConfig *config.NetworkConfig) *Controller {
+	) *Controller {
 
 	// Create an ifaceStore that caches network interfaces managed by this node.
 	ifaceStore := interfacestore.NewInterfaceStore()
 
-	v4Enabled := config.IsIPv4Enabled(nodeConfig, networkConfig.TrafficEncapMode)
-	v6Enabled := config.IsIPv6Enabled(nodeConfig, networkConfig.TrafficEncapMode)
+	// v4Enabled := config.IsIPv4Enabled(nodeConfig, networkConfig.TrafficEncapMode)
+	// v6Enabled := config.IsIPv6Enabled(nodeConfig, networkConfig.TrafficEncapMode)
+	v4Enabled := true
+	v6Enabled := false
 	ipt, ok := iptables.New(v4Enabled, v6Enabled)
 	if ok != nil {
 		fmt.Errorf("error creating IPTables instance: %v", ok)
@@ -122,7 +124,7 @@ func NewController(
 		ipt:             ipt,
 		ifaceStore:      ifaceStore,
 		nodeConfig:      nodeConfig,
-		networkConfig:   networkConfig,
+		// networkConfig:   networkConfig,
 	}
 
 	klog.Info("init ifacestore")

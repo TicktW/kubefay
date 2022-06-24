@@ -16,5 +16,5 @@
 
 package cni
 
-// AntreaCNISocketAddr is the UNIX socket used by the CNI Protobuf / gRPC service.
-var AntreaCNISocketAddr = "/var/run/antrea/cni.sock"
+// CNISocketAddr is the UNIX socket used by the CNI Protobuf / gRPC service.
+var CNISocketAddr = "/var/run/antrea/cni.sock"

@@ -13,8 +13,10 @@ import (
 	"net"
 	"time"
 
+	"antrea.io/antrea/pkg/signals"
 	"github.com/TicktW/kubefay/pkg/agent"
 	crdinformers "github.com/TicktW/kubefay/pkg/client/informers/externalversions"
+	"github.com/TicktW/kubefay/pkg/cni"
 	"github.com/TicktW/kubefay/pkg/utils/k8s"
 	"github.com/TicktW/kubefay/pkg/version"
 	"github.com/spf13/cobra"
@@ -22,9 +24,13 @@ import (
 	componentbaseconfig "k8s.io/component-base/config"
 	klog "k8s.io/klog/v2"
 
+	"github.com/TicktW/kubefay/pkg/agent/cniserver"
+	"github.com/TicktW/kubefay/pkg/agent/controller/ipam"
+	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
+	"github.com/TicktW/kubefay/pkg/agent/openflow"
+	"github.com/TicktW/kubefay/pkg/agent/route"
 	ofconfig "github.com/TicktW/kubefay/pkg/ovs/openflow"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
-	"github.com/TicktW/kubefay/pkg/agent/openflow"
 )
 
 const (
@@ -42,8 +48,9 @@ const (
 	defaultIGMPQueryInterval       = 125 * time.Second
 	defaultStaleConnectionTimeout  = 5 * time.Minute
 	defaultNPLPortRange            = "61000-62000"
-	defaultMTU = 1450
-    DefaultSubnetCIDRv4 = "10.192.0.0/16"
+	defaultMTU                     = 1450
+	DefaultSubnetCIDRv4            = "10.192.0.0/16"
+	HostProcPathPrefix             = "/"
 )
 
 func main() {
@@ -96,7 +103,8 @@ func run() error {
 	namespaceInformer := informerFactory.Core().V1().Namespaces()
 	podInformer := informerFactory.Core().V1().Pods()
 
-	ovsdbAddress := ovsconfig.GetConnAddress(o.config.OVSRunDir)
+	ovsdbAddress := ovsconfig.GetConnAddress(ovsconfig.DefaultOVSRunDir)
+
 	ovsdbConnection, err := ovsconfig.NewOVSDBConnectionUDS(ovsdbAddress)
 	if err != nil {
 		// TODO: ovsconfig.NewOVSDBConnectionUDS might return timeout in the future, need to add retry
@@ -114,16 +122,83 @@ func run() error {
 
 	_, serviceCIDRNet, _ := net.ParseCIDR(defaultServiceCIDR)
 
-	agent.NewAgent(
+	routeClient, err := route.NewClient(serviceCIDRNet, defaultTunnelType, true)
+	if err != nil {
+		return fmt.Errorf("error creating route client: %v", err)
+	}
+
+	// Create an ifaceStore that caches network interfaces managed by this node.
+	ifaceStore := interfacestore.NewInterfaceStore()
+
+	agentInit := agent.NewAgent(
 		k8sClient,
 		ovsBridgeClient,
 		ofClient,
+		ifaceStore,
 		defaultOVSBridge,
 		defaultHostGateway,
 		defaultMTU,
 		defaultTunnelType,
 		DefaultSubnetCIDRv4,
 		serviceCIDRNet,
+		routeClient,
 	)
+	err = agentInit.Initialize()
+	if err != nil {
+		return err
+	}
+
+	nodeConfig := agentInit.GetNodeConfig()
+
+	networkReadyCh := make(chan struct{})
+	isChaining := false
+	cniServer := cniserver.New(
+		cni.CNISocketAddr,
+		HostProcPathPrefix,
+		nodeConfig,
+		k8sClient,
+		isChaining,
+		routeClient,
+		networkReadyCh)
+	// TODO datapath type need to be configured
+	err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, ovsconfig.OVSDatapathNetdev)
+	if err != nil {
+		return fmt.Errorf("error initializing CNI server: %v", err)
+	}
+
+	ipamController := ipam.NewController(
+		k8sClient,
+		crdClient,
+		podInformer,
+		namespaceInformer,
+		subnetInformer,
+		ovsBridgeClient,
+		ofClient,
+		nodeConfig,
+	)
+
+	ipamCniServer := cniserver.NewIPAMCNIServer(
+		cni.CNISocketAddr+".ipam",
+		nodeConfig,
+		HostProcPathPrefix,
+		k8sClient,
+		crdClient,
+		podInformer,
+		namespaceInformer,
+		subnetInformer,
+	)
+
+	stopCh := signals.RegisterSignalHandlers()
+
+	go cniServer.Run(stopCh)
+
+	informerFactory.Start(stopCh)
+	crdInformerFactory.Start(stopCh)
+
+	go ipamController.Run(2, stopCh)
+	go ipamCniServer.Run(stopCh)
+
+	<-stopCh
+	klog.Info("Stopping Kubefay agent")
 	return nil
 }
