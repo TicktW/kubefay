@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipam-deployment
+  labels:
+    app: ipam-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ipam-app
+  template:
+    metadata:
+      labels:
+        app: ipam-app
+    spec:
+      nodeName: kind-control-plane         
+      containers:
+      - name: nginx
+        image: projects.registry.vmware.com/antrea/antrea-ubuntu:latest
+        imagePullPolicy: Never
+        command: [ "/bin/sh","-c","python3 -m http.server" ]
+        ports:
+        - containerPort: 80

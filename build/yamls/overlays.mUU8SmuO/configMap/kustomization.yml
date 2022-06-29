@@ -1,0 +1,10 @@
+configMapGenerator:
+- behavior: merge
+  files:
+  - antrea-agent.conf
+  - antrea-controller.conf
+  name: antrea-config
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../base

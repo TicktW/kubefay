@@ -18,24 +18,11 @@ DOCKER_BUILD_ARGS += --build-arg GO_VERSION=$(GO_VERSION)
 
 include version.mk
 LDFLAGS += $(VERSION_LDFLAGS)
+IPAMLDFLAGS += $(VERSION_LDFLAGS)
+IPAMLDFLAGS += -X github.com/kubefay/TicktW/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
 
 .PHONY: all
 all: build
-
-.PHONY: antrea-agent
-antrea-agent:
-	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' antrea.io/antrea/cmd/antrea-agent
-
-.PHONY: antrea-controller
-antrea-controller:
-	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' antrea.io/antrea/cmd/antrea-controller
-
-.PHONY: antrea-cni
-antrea-cni:
-	@mkdir -p $(BINDIR)
-	GOOS=linux CGO_ENABLED=0 $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' antrea.io/antrea/cmd/antrea-cni
 
 .PHONY: build
 build: build-ubuntu
@@ -89,14 +76,8 @@ cluster:
 	kind load docker-image kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:latest
 	sleep 5
 
-.PHONY: bin
-bin:
-	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/...
-	./bin/fay-agent
-
-.PHONY: dev
-dev: 
+.PHONY: dev-test
+dev-test: 
 	make base-ubuntu
 	make build-ubuntu
 	make cluster
@@ -105,3 +86,36 @@ dev:
 .PHONY: run-dev-docker
 run-dev-docker:
 	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash
+
+.PHONY: bin-agent
+bin-agent:
+	@mkdir -p $(BINDIR)
+	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/fay-agent
+
+.PHONY: bin-cni
+bin-cni:
+	@mkdir -p $(BINDIR)
+	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/fay-cni
+
+.PHONY: bin-ipam-cni
+bin-ipam-cni:
+	@mkdir -p $(BINDIR)
+	# IPAMLDFLAGS := $(LDFLAGS) + -X github.com/TicktW/kubefay/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
+	# @echo $(IPAMLDFLAGS)
+	GOOS=linux $(GO) build -o $(BINDIR)/fay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/TicktW/kubefay/cmd/fay-cni
+
+.PHONY: bin
+bin:
+	@make bin-cni
+	@make bin-ipam-cni
+	@make bin-agent
+
+.PHONY: clean
+clean:
+	rm -r $(BINDIR)
+
+.PHONY: manifest
+manifest:
+	@echo "===> Generating dev manifest for Antrea <==="
+	# $(CURDIR)/hack/generate-manifest.sh --mode dev > build/yamls/antrea.yml
+	$(CURDIR)/hack/generate-manifest.sh --mode dev
