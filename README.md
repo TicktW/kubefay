@@ -15,8 +15,8 @@ Virtual network solution for K8s based on OVS.
 - [License](#license)
 
 ## Background
-kubefay是k8s下的网络解决方案。在使用kubefay之前，请首先熟悉k8s并了解CNI。
-kubefay is a network solution for [kubernetes](https://kubernetes.io/docs/home/). Before using kubefay, please first familiarize with k8s and understand [CNI](https://github.com/containernetworking/cni).
+kubefay是K8s下的网络解决方案。在使用kubefay之前，请首先熟悉K8s并了解CNI。
+kubefay is a network solution for [kubernetes](https://kubernetes.io/docs/home/). Before using Kubefay, please first familiarize with K8s and understand [CNI](https://github.com/containernetworking/cni).
 
 ### Naming of kubefay
 The name Kubefay comes from [Chang'e](https://en.wikipedia.org/wiki/Chang%27e), an ancient Chinese mythological figure. Chang'e longed for a beautiful paradise, and finally became a fairy in the Moon Palace through hard work. Network virtualization is also a fascinating field, and Kubefay will rush to the heaven of network virtualization!
@@ -60,4 +60,4 @@ Small note: If editing the Readme, please conform to the [standard-readme](https
 
 ## License
 
-[MIT © TicktW](../LICENSE)
+[MIT © TicktW](./LICENSE)
