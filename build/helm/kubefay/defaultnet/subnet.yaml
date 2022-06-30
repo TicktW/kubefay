@@ -1,0 +1,8 @@
+apiVersion: kubefay.ticktw.github.com/v1alpha1
+kind: SubNet
+metadata:
+  name: defaultnet
+spec:
+  # Add fields here
+  ipVersion: v4
+  cidr: 10.192.0.0/16

@@ -5,7 +5,7 @@
         {
             "type": "antrea",
             "ipam": {
-                "type": "host-local"
+                "type": "fay-ipam-cni"
             }
         },
         {

@@ -85,24 +85,25 @@ dev-test:
 
 .PHONY: run-dev-docker
 run-dev-docker:
-	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash
+	# @docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash
+	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu:latest bash
 
 .PHONY: bin-agent
 bin-agent:
 	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/fay-agent
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-agent $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-agent
 
 .PHONY: bin-cni
 bin-cni:
 	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR) $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/fay-cni
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-cni $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-cni
 
 .PHONY: bin-ipam-cni
 bin-ipam-cni:
 	@mkdir -p $(BINDIR)
 	# IPAMLDFLAGS := $(LDFLAGS) + -X github.com/TicktW/kubefay/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
 	# @echo $(IPAMLDFLAGS)
-	GOOS=linux $(GO) build -o $(BINDIR)/fay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/TicktW/kubefay/cmd/fay-cni
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-cni
 
 .PHONY: bin
 bin:
@@ -114,8 +115,13 @@ bin:
 clean:
 	rm -r $(BINDIR)
 
-.PHONY: manifest
-manifest:
+.PHONY: manifest-gen
+manifest-gen:
+	@echo "Generating dev manifest for Kubefay"
+	helm template kubefay  --dry-run ./build/helm/kubefay/
+
+.PHONY: manifest-apply
+manifest-apply:
 	@echo "===> Generating dev manifest for Antrea <==="
-	# $(CURDIR)/hack/generate-manifest.sh --mode dev > build/yamls/antrea.yml
-	$(CURDIR)/hack/generate-manifest.sh --mode dev
+	helm template kubefay  --dry-run ./build/helm/kubefay/ | kubectl apply -f -
+	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
