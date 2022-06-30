@@ -81,7 +81,7 @@ spec:
               cpu: "200m"
           command: ["kubefay-agent"]
           # Log to both "/var/log/kubefay/" and stderr (so "kubectl logs" can work).
-          args: ["--config", "/etc/kubefay/kubefay-agent.conf", "--logtostderr=false", "--log_dir=/var/log/kubefay", "--alsologtostderr", "--log_file_max_size=100", "--log_file_max_num=4", "--v=0"]
+          # args: ["--config", "/etc/kubefay/kubefay-agent.conf", "--logtostderr=false", "--log_dir=/var/log/kubefay", "--alsologtostderr", "--log_file_max_size=100", "--log_file_max_num=4", "--v=0"]
           env:
             # Provide pod and node information for clusterinformation CRD.
             - name: POD_NAME
