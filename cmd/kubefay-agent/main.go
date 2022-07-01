@@ -152,7 +152,6 @@ func run() error {
 		return err
 	}
 
-	time.Sleep(1000 * time.Second)
 	nodeConfig := agentInit.GetNodeConfig()
 
 	networkReadyCh := make(chan struct{})

@@ -104,7 +104,7 @@ func NewController(
 	v6Enabled := false
 	ipt, ok := iptables.New(v4Enabled, v6Enabled)
 	if ok != nil {
-		fmt.Errorf("error creating IPTables instance: %v", ok)
+		fmt.Printf("error creating IPTables instance: %v", ok)
 		return nil
 	}
 

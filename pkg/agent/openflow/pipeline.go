@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 
 	// "antrea.io/antrea/pkg/agent/metrics"
 	"github.com/TicktW/kubefay/pkg/agent/config"
@@ -1154,6 +1155,8 @@ func (c *client) arpSpoofGuardFlow(ifIP net.IP, ifMAC net.HardwareAddr, ifOFPort
 // case will occur if an Endpoint is removed and is the learned Endpoint
 // selection of the Service.
 func (c *client) sessionAffinityReselectFlow() binding.Flow {
+	klog.Infof("%+v",c.pipeline[endpointDNATTable])
+	klog.Info("in seesion openflow")
 	return c.pipeline[endpointDNATTable].BuildFlow(priorityLow).
 		MatchRegRange(int(serviceLearnReg), marksRegServiceSelected, serviceLearnRegRange).
 		Action().LoadRegRange(int(serviceLearnReg), marksRegServiceNeedLB, serviceLearnRegRange).

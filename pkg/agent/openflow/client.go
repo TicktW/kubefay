@@ -39,7 +39,7 @@ type Client interface {
 	// be called to ensure that the set of OVS flows is correct. All flows programmed in the
 	// switch which match the current round number will be deleted before any new flow is
 	// installed.
-	Initialize(roundInfo types.RoundInfo) (<-chan struct{}, error)
+	Initialize(roundInfo types.RoundInfo, nodeConfig *config.NodeConfig) (<-chan struct{}, error)
 
 	// InstallGatewayFlows sets up flows related to an OVS gateway port, the gateway must exist.
 	InstallGatewayFlows() error
@@ -574,8 +574,11 @@ func (c *client) InstallClusterServiceCIDRFlows(serviceNets []*net.IPNet) error 
 }
 
 func (c *client) InstallGatewayFlows() error {
+	klog.Info("gateway xxxxxx xxxxxxx")
+	klog.Infof("%+v", c.nodeConfig)
 	gatewayConfig := c.nodeConfig.GatewayConfig
 	gatewayIPs := []net.IP{}
+	klog.Info("gateway xxxxxx xxxxxxx")
 
 	flows := []binding.Flow{
 		c.gatewayClassifierFlow(cookie.Default),
@@ -659,8 +662,10 @@ func (c *client) initialize() error {
 	return nil
 }
 
-func (c *client) Initialize(roundInfo types.RoundInfo) (<-chan struct{}, error) {
+func (c *client) Initialize(roundInfo types.RoundInfo, nodeConfig *config.NodeConfig) (<-chan struct{}, error) {
 	// c.nodeConfig = nodeConfig
+	c.nodeConfig = nodeConfig
+	c.encapMode = config.TrafficEncapModeEncap
 
 	// TODO ipv4 and ipv6
 	// if config.IsIPv4Enabled(nodeConfig, encapMode) {

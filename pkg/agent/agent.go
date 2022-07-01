@@ -113,7 +113,6 @@ func (agent *Agent) Initialize() error {
 		return err
 	}
 
-
 	wg.Add(1)
 	// routeClient.Initialize() should be after i.setupOVSBridge() which
 	// creates the host gateway interface.
@@ -340,7 +339,7 @@ func (agent *Agent) initOpenFlowPipeline() error {
 	roundInfo := getRoundInfo(agent.ovsBridgeClient)
 
 	// Set up all basic flows.
-	ofConnCh, err := agent.ofClient.Initialize(roundInfo)
+	ofConnCh, err := agent.ofClient.Initialize(roundInfo, agent.nodeConfig)
 	if err != nil {
 		klog.Errorf("Failed to initialize openflow client: %v", err)
 		return err
@@ -348,6 +347,7 @@ func (agent *Agent) initOpenFlowPipeline() error {
 
 	// Set up flow entries for gateway interface, including classifier, skip spoof guard check,
 	// L3 forwarding and L2 forwarding
+	klog.Info("gateway out ......")
 	if err := agent.ofClient.InstallGatewayFlows(); err != nil {
 		klog.Errorf("Failed to setup openflow entries for gateway: %v", err)
 		return err
@@ -371,14 +371,16 @@ func (agent *Agent) initOpenFlowPipeline() error {
 	// 	}
 	// } else {
 
-	// Set up flow entries to enable Service connectivity. The agent proxy handles
-	// ClusterIP Services while the upstream kube-proxy is leveraged to handle
-	// any other kinds of Services.
-	if err := agent.ofClient.InstallClusterServiceFlows(); err != nil {
-		klog.Errorf("Failed to setup default OpenFlow entries for ClusterIP Services: %v", err)
+	// Set up flow entries to enable Service connectivity. Upstream kube-proxy is leveraged to
+	// provide load-balancing, and the flows installed by this method ensure that traffic sent
+	// from local Pods to any Service address can be forwarded to the host gateway interface
+	// correctly. Otherwise packets might be dropped by egress rules before they are DNATed to
+	// backend Pods.
+	// TODO add service cidr v6, 3rd para of this func
+	if err := agent.ofClient.InstallClusterServiceCIDRFlows([]*net.IPNet{agent.serviceCIDR, agent.serviceCIDR}); err != nil {
+		klog.Errorf("Failed to setup OpenFlow entries for Service CIDRs: %v", err)
 		return err
 	}
-	// }
 
 	go func() {
 		// Delete stale flows from previous round. We need to wait long enough to ensure
@@ -525,6 +527,7 @@ func (agent *Agent) initNodeLocalConfig() error {
 		return err
 	}
 	agent.nodeConfig.PodIPv4CIDR = localSubnet
+	klog.Infof("%+v", agent.nodeConfig)
 	return nil
 
 }
