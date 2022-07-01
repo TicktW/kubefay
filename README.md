@@ -15,7 +15,6 @@ Virtual network solution for K8s based on OVS.
 - [License](#license)
 
 ## Background
-kubefay是K8s下的网络解决方案。在使用kubefay之前，请首先熟悉K8s并了解CNI。
 kubefay is a network solution for [kubernetes](https://kubernetes.io/docs/home/). Before using Kubefay, please first familiarize with K8s and understand [CNI](https://github.com/containernetworking/cni).
 
 ### Naming of kubefay

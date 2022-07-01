@@ -53,11 +53,11 @@ type Agent struct {
 	client              clientset.Interface
 	ovsBridgeClient     ovsconfig.OVSBridgeClient
 	ofClient            openflow.Client
-	ifaceStore interfacestore.InterfaceStore
+	ifaceStore          interfacestore.InterfaceStore
 	ovsBridge           string
 	hostGateway         string // name of gateway port on the OVS bridge
 	mtu                 int
-	tunnelType   string
+	tunnelType          string
 	defaultSubnetCIDRv4 string
 	serviceCIDR         *net.IPNet // K8s Service ClusterIP CIDR
 	nodeConfig          *config.NodeConfig
@@ -83,10 +83,10 @@ func NewAgent(
 		ovsBridgeClient:     ovsBridgeClient,
 		ofClient:            ofClient,
 		ovsBridge:           ovsBridge,
-		ifaceStore: ifaceStore,
+		ifaceStore:          ifaceStore,
 		hostGateway:         hostGateway,
 		mtu:                 mtu,
-		tunnelType:   tunnelType,
+		tunnelType:          tunnelType,
 		defaultSubnetCIDRv4: defaultSubnetCIDRv4,
 		serviceCIDR:         serviceCIDR,
 		routeClient:         routeClient,
@@ -99,6 +99,7 @@ func (agent *Agent) Initialize() error {
 	// wg is used to wait for the asynchronous initialization.
 	var wg sync.WaitGroup
 
+	klog.Info("agent init: init node local config")
 	if err := agent.initNodeLocalConfig(); err != nil {
 		return err
 	}
@@ -107,18 +108,23 @@ func (agent *Agent) Initialize() error {
 	// 	return err
 	// }
 
+	klog.Info("agent init: set up ovs bridge")
 	if err := agent.setupOVSBridge(); err != nil {
 		return err
 	}
 
+
 	wg.Add(1)
 	// routeClient.Initialize() should be after i.setupOVSBridge() which
 	// creates the host gateway interface.
+	klog.Info("agent init: route client init")
 	if err := agent.routeClient.Initialize(agent.nodeConfig, wg.Done); err != nil {
 		return err
 	}
 
+	// time.Sleep(10000 * time.Second)
 	// Install OpenFlow entries on OVS bridge.
+	klog.Info("agent init: init openflow pipeline")
 	if err := agent.initOpenFlowPipeline(); err != nil {
 		return err
 	}
@@ -130,6 +136,7 @@ func (agent *Agent) Initialize() error {
 // from the OVS bridge.
 func (agent *Agent) initInterfaceStore() error {
 	ovsPorts, err := agent.ovsBridgeClient.GetPortList()
+	klog.Infof("ovsports %+v", ovsPorts)
 	if err != nil {
 		klog.Errorf("Failed to list OVS ports: %v", err)
 		return err
@@ -142,6 +149,7 @@ func (agent *Agent) initInterfaceStore() error {
 			PortUUID: port.UUID,
 			OFPort:   port.OFPort}
 		var intf *interfacestore.InterfaceConfig
+
 		switch {
 		case port.OFPort == config.HostGatewayOFPort:
 			intf = &interfacestore.InterfaceConfig{
@@ -181,27 +189,29 @@ func (agent *Agent) initInterfaceStore() error {
 	agent.ifaceStore.Initialize(ifaceList)
 	return nil
 }
+
 // setupOVSBridge sets up the OVS bridge and create host gateway interface and tunnel port
 func (agent *Agent) setupOVSBridge() error {
+
+	klog.Info("agent init: setup ovs bridge: create bridge")
 	if err := agent.ovsBridgeClient.Create(); err != nil {
 		klog.Error("Failed to create OVS bridge: ", err)
 		return err
 	}
 
-	// if err := agent.prepareOVSBridge(); err != nil {
-	// 	return err
-	// }
-
+	klog.Info("agent init: setup ovs bridge: init interface store")
 	// Initialize interface cache
 	if err := agent.initInterfaceStore(); err != nil {
 		return err
 	}
 
+	klog.Info("agent init: setup ovs bridge: setup tunnel interface")
 	if err := agent.setupDefaultTunnelInterface(defaultTunInterfaceName, ovsconfig.TunnelType(agent.tunnelType)); err != nil {
 		return err
 	}
 
 	// Set up host gateway interface
+	klog.Info("agent init: setup ovs bridge: setup gateway interface")
 	err := agent.setupGatewayInterface()
 	if err != nil {
 		return err
@@ -211,6 +221,27 @@ func (agent *Agent) setupOVSBridge() error {
 }
 
 func (agent *Agent) setupDefaultTunnelInterface(tunnelPortName string, tunnelType ovsconfig.TunnelType) error {
+
+	tunnelIface, portExists := agent.ifaceStore.GetInterface(tunnelPortName)
+
+	// Enabling UDP checksum can greatly improve the performance for Geneve and
+	// VXLAN tunnels by triggering GRO on the receiver.
+	shouldEnableCsum := tunnelType == ovsconfig.GeneveTunnel || tunnelType == ovsconfig.VXLANTunnel
+
+	// Check the default tunnel port.
+	if portExists {
+		if tunnelIface.TunnelInterfaceConfig.Type == tunnelType {
+			klog.V(2).Infof("Tunnel port %s already exists on OVS bridge", tunnelPortName)
+			// This could happen when upgrading from previous versions that didn't set it.
+			if shouldEnableCsum && !tunnelIface.TunnelInterfaceConfig.Csum {
+				if err := agent.enableTunnelCsum(tunnelPortName); err != nil {
+					return fmt.Errorf("failed to enable csum for tunnel port %s: %v", tunnelPortName, err)
+				}
+				tunnelIface.TunnelInterfaceConfig.Csum = true
+			}
+			return nil
+		}
+	}
 
 	// Create the default tunnel port and interface.
 	_, err := agent.ovsBridgeClient.CreateTunnelPort(tunnelPortName, tunnelType, DefaultTunOFPort)
@@ -222,10 +253,27 @@ func (agent *Agent) setupDefaultTunnelInterface(tunnelPortName string, tunnelTyp
 	return nil
 }
 
+func (agent *Agent) enableTunnelCsum(tunnelPortName string) error {
+	options, err := agent.ovsBridgeClient.GetInterfaceOptions(tunnelPortName)
+	if err != nil {
+		return fmt.Errorf("error getting interface options: %w", err)
+	}
+
+	updatedOptions := make(map[string]interface{})
+	for k, v := range options {
+		updatedOptions[k] = v
+	}
+	updatedOptions["csum"] = "true"
+	return agent.ovsBridgeClient.SetInterfaceOptions(tunnelPortName, updatedOptions)
+}
+
 // setupGatewayInterface creates the host gateway interface which is an internal port on OVS. The ofport for host
 // gateway interface is predefined, so invoke CreateInternalPort with a specific ofport_request
 func (agent *Agent) setupGatewayInterface() error {
 	gatewayIface, portExists := agent.ifaceStore.GetInterface(agent.hostGateway)
+	klog.Infof("%s", agent.hostGateway)
+	klog.Infof("%+v", portExists)
+	klog.Infof("%+v", gatewayIface)
 	if !portExists {
 		klog.V(2).Infof("Creating gateway port %s on OVS bridge", agent.hostGateway)
 		gwPortUUID, err := agent.ovsBridgeClient.CreateInternalPort(agent.hostGateway, config.HostGatewayOFPort, nil)
@@ -322,7 +370,6 @@ func (agent *Agent) initOpenFlowPipeline() error {
 	// 		return err
 	// 	}
 	// } else {
-
 
 	// Set up flow entries to enable Service connectivity. The agent proxy handles
 	// ClusterIP Services while the upstream kube-proxy is leveraged to handle
@@ -459,12 +506,12 @@ func (agent *Agent) initNodeLocalConfig() error {
 	}
 
 	agent.nodeConfig = &config.NodeConfig{
-		Name:            nodeName,
-		OVSBridge:       agent.ovsBridge,
-		DefaultTunName:  defaultTunInterfaceName,
-		NodeIPAddr:      localAddr,
-		NodeMTU: agent.mtu,
-		}
+		Name:           nodeName,
+		OVSBridge:      agent.ovsBridge,
+		DefaultTunName: defaultTunInterfaceName,
+		NodeIPAddr:     localAddr,
+		NodeMTU:        agent.mtu,
+	}
 
 	klog.Infof("Setting Node MTU=%d", agent.mtu)
 

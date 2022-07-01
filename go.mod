@@ -11,8 +11,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.1.2
-	github.com/smartystreets/goconvey v1.7.2
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/grpc v1.47.0
@@ -63,12 +62,10 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -82,7 +79,6 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/safchain/ethtool v0.0.0-20190326074333-42ed695e3de8 // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/streamrail/concurrent-map v0.0.0-20160823150647-8bf1e9bacbf6 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20210510164352-d17758a128bf

@@ -15,8 +15,9 @@ Virtual network solution for K8s based on OVS.
 - [License](#license)
 
 ## Background
+kubefay是K8s下的网络解决方案。在使用kubefay之前，请首先熟悉K8s并了解CNI。
 
-### Any optional sections
+### Kubefay之源
 Kubefay的名字源于一个中国古代神话人物嫦娥。嫦娥向往美好的天堂，最终通过努力成为的月宫中的仙女。网络虚拟化同样是一个令人神往的领域，Kubefay将奔向网络虚拟化的天宫！
 
 ## Install

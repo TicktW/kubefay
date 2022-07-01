@@ -73,8 +73,10 @@ cluster:
 	sleep 5
 	kind get nodes | xargs ./hack/kind-fix-networking.sh
 	sleep 5
+
+.PHONY: cluster-load-image
+cluster-load-image:
 	kind load docker-image kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:latest
-	sleep 5
 
 .PHONY: dev-test
 dev-test: 
@@ -125,3 +127,34 @@ manifest-apply:
 	@echo "===> Generating dev manifest for Antrea <==="
 	helm template kubefay  --dry-run ./build/helm/kubefay/ | kubectl apply -f -
 	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
+
+.PHONY: kube-clean-pod
+kube-clean-pod:
+	kubectl -n kube-system delete po $$( kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | xargs)
+
+.PHONY: kube-get-pod
+kube-get-pod:
+	kubectl -n kube-system get po | grep kubefay-agent
+
+.PHONY: kube-log-pod
+kube-log-pod:
+	kubectl -n kube-system logs $$(kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | xargs | awk '{print $$1}')
+
+.PHONY: dev-small-round
+dev-small-round:
+	make bin
+	make build-ubuntu
+	make cluster-load-image
+	make kube-clean-pod
+	make kube-get-pod
+	make kube-log-pod
+
+.PHONY: dev-big-round
+dev-big-round:
+	make bin
+	make build-ubuntu
+	make cluster
+	make cluster-load-image
+	make manifest-apply
+	make kube-get-pod
+	make kube-log-pod

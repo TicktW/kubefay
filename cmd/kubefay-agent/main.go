@@ -35,7 +35,7 @@ import (
 
 const (
 	defaultOVSBridge               = "br-int"
-	defaultHostGateway             = "antrea-gw0"
+	defaultHostGateway             = "kubefay-gw0"
 	defaultHostProcPathPrefix      = "/host"
 	defaultServiceCIDR             = "10.96.0.0/12"
 	defaultTunnelType              = ovsconfig.GeneveTunnel
@@ -84,11 +84,12 @@ func run() error {
 	klog.Infof("kubefay agent (version %s)", version.GetFullVersion())
 	// logs.GlogSetter("5")
 
-	// klog.V(1).Infof("kubefay agent 1 (version %s)", version.GetFullVersion())
-	// klog.V(2).Infof("kubefay agent 2 (version %s)", version.GetFullVersion())
-	// klog.V(3).Infof("kubefay agent 3 (version %s)", version.GetFullVersion())
-	// klog.V(4).Infof("kubefay agent 4 (version %s)", version.GetFullVersion())
-	// klog.V(5).Infof("kubefay agent 5 (version %s)", version.GetFullVersion())
+	klog.V(1).Infof("kubefay agent 1 (version %s)", version.GetFullVersion())
+	klog.V(2).Infof("kubefay agent 2 (version %s)", version.GetFullVersion())
+	klog.V(3).Infof("kubefay agent 3 (version %s)", version.GetFullVersion())
+	klog.V(4).Infof("kubefay agent 4 (version %s)", version.GetFullVersion())
+	klog.V(5).Infof("kubefay agent 5 (version %s)", version.GetFullVersion())
+	klog.Info("create k8s clients")
 	k8sConfig := componentbaseconfig.ClientConnectionConfiguration{}
 	k8sClient, crdClient, err := k8s.CreateClients(k8sConfig)
 
@@ -103,8 +104,8 @@ func run() error {
 	namespaceInformer := informerFactory.Core().V1().Namespaces()
 	podInformer := informerFactory.Core().V1().Pods()
 
+	klog.Info("connect to ovs db...")
 	ovsdbAddress := ovsconfig.GetConnAddress(ovsconfig.DefaultOVSRunDir)
-
 	ovsdbConnection, err := ovsconfig.NewOVSDBConnectionUDS(ovsdbAddress)
 	if err != nil {
 		// TODO: ovsconfig.NewOVSDBConnectionUDS might return timeout in the future, need to add retry
@@ -112,9 +113,10 @@ func run() error {
 	}
 	defer ovsdbConnection.Close()
 
-	ovsBridgeClient := ovsconfig.NewOVSBridge(ovsconfig.DefaultOVSRunDir, ovsconfig.OVSDatapathNetdev, ovsdbConnection)
+	ovsBridgeClient := ovsconfig.NewOVSBridge(defaultOVSBridge, ovsconfig.OVSDatapathNetdev, ovsdbConnection)
 	ovsBridgeMgmtAddr := ofconfig.GetMgmtAddress(ovsconfig.DefaultOVSRunDir, defaultOVSBridge)
 
+	klog.Info("makeing openflow client...")
 	ofClient := openflow.NewClient(defaultOVSBridge, ovsBridgeMgmtAddr,
 		false,
 		false,
@@ -122,6 +124,7 @@ func run() error {
 
 	_, serviceCIDRNet, _ := net.ParseCIDR(defaultServiceCIDR)
 
+	klog.Info("set up route client...")
 	routeClient, err := route.NewClient(serviceCIDRNet, defaultTunnelType, true)
 	if err != nil {
 		return fmt.Errorf("error creating route client: %v", err)
@@ -130,6 +133,7 @@ func run() error {
 	// Create an ifaceStore that caches network interfaces managed by this node.
 	ifaceStore := interfacestore.NewInterfaceStore()
 
+	klog.Info("begin agent init...11111")
 	agentInit := agent.NewAgent(
 		k8sClient,
 		ovsBridgeClient,
@@ -148,6 +152,7 @@ func run() error {
 		return err
 	}
 
+	time.Sleep(1000 * time.Second)
 	nodeConfig := agentInit.GetNodeConfig()
 
 	networkReadyCh := make(chan struct{})
