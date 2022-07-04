@@ -158,7 +158,7 @@ func run() error {
 	isChaining := false
 	cniServer := cniserver.New(
 		cni.CNISocketAddr,
-		HostProcPathPrefix,
+		defaultHostProcPathPrefix,
 		nodeConfig,
 		k8sClient,
 		isChaining,
@@ -182,9 +182,9 @@ func run() error {
 	)
 
 	ipamCniServer := cniserver.NewIPAMCNIServer(
-		cni.CNISocketAddr+".ipam",
+		cni.IPAMCNISocketAddr,
 		nodeConfig,
-		HostProcPathPrefix,
+		defaultHostProcPathPrefix,
 		k8sClient,
 		crdClient,
 		podInformer,
@@ -202,6 +202,7 @@ func run() error {
 	go ipamController.Run(2, stopCh)
 	go ipamCniServer.Run(stopCh)
 
+	close(networkReadyCh)
 	<-stopCh
 	klog.Info("Stopping Kubefay agent")
 	return nil

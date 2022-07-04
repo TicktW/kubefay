@@ -19,7 +19,7 @@ DOCKER_BUILD_ARGS += --build-arg GO_VERSION=$(GO_VERSION)
 include version.mk
 LDFLAGS += $(VERSION_LDFLAGS)
 IPAMLDFLAGS += $(VERSION_LDFLAGS)
-IPAMLDFLAGS += -X github.com/kubefay/TicktW/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
+# IPAMLDFLAGS += -X github.com/TicktW/kubefay/pkg/cni.IPAMBuild=true
 
 .PHONY: all
 all: build
@@ -140,6 +140,10 @@ kube-get-pod:
 kube-log-pod:
 	kubectl -n kube-system logs $$(kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | xargs | awk '{print $$1}')
 
+.PHONY: kube-exec-pod
+kube-exec-pod:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | head -1) -- bash
+
 .PHONY: dev-small-round
 dev-small-round:
 	make bin
@@ -158,3 +162,7 @@ dev-big-round:
 	make manifest-apply
 	make kube-get-pod
 	make kube-log-pod
+
+.PHONY: docker-exec-kind-node
+docker-exec-kind-node:
+	docker exec -it $$(docker ps | grep kindest | grep node | awk '{print $$1}' | head -1) bash

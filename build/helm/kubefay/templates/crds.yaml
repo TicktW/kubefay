@@ -46,7 +46,7 @@ spec:
                   items:
                     type: string
                 usedPool:
-                  type: string
+                  type: object
             status:
                 type: object
                 properties:

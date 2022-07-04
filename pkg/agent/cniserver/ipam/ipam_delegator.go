@@ -27,7 +27,7 @@ import (
 
 const (
 	ipamHostLocal  = "host-local"
-	ipamAntrea = "antrea-ipam-cni"
+	ipamAntrea = "kubefay-ipam-cni"
 	defaultCNIPath = "/opt/cni/bin"
 )
 

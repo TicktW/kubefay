@@ -1,11 +1,11 @@
 {
     "cniVersion":"0.3.0",
-    "name": "antrea",
+    "name": "kubefay",
     "plugins": [
         {
-            "type": "antrea",
+            "type": "kubefay-cni",
             "ipam": {
-                "type": "fay-ipam-cni"
+                "type": "kubefay-ipam-cni"
             }
         },
         {

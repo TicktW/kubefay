@@ -8,8 +8,8 @@ set -euo pipefail
 install -m 644 /etc/kubefay/kubefay-cni.conflist /host/etc/cni/net.d/10-kubefay.conflist
 
 # Install kubefay binary file
-install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay
-install -m 755 /usr/local/bin/kubefay-ipam-cni /opt/cni/bin/kubefay-ipam-cni
+install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay-cni
+# install -m 755 /usr/local/bin/kubefay-ipam-cni /opt/cni/bin/kubefay-ipam-cni
 install -m 755 /usr/local/bin/kubefay-ipam-cni /host/opt/cni/bin/kubefay-ipam-cni
 
 # Install the loopback plugin.

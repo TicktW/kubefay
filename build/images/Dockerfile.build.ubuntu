@@ -22,3 +22,4 @@ USER root
 
 COPY build/images/scripts/* /usr/local/bin/
 COPY --from=kubefay-build /kubefay/bin/* /usr/local/bin/
+COPY --from=kubefay-build /kubefay/bin/kubefay-ipam-cni /opt/cni/bin/kubefay-ipam-cni

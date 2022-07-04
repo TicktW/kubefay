@@ -182,7 +182,7 @@ func (s *IPAMCNIServer) getSubnet(podNamespace string) (cidr string, name string
 }
 
 func (s *IPAMCNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*cnipb.CniCmdResponse, error) {
-	klog.Infof("Received CmdAdd request %v", request)
+	klog.Infof("IPAM Received CmdAdd request %v", request)
 	cniConfig, response := s.checkRequestMessage(request)
 	if response != nil {
 		return response, nil

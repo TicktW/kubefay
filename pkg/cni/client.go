@@ -83,7 +83,7 @@ var withClient = rpcClient
 
 func rpcClient(f func(client cnipb.CniClient) error) error {
 	conn, err := grpc.Dial(
-		CNISocketAddr,
+		CNIRequestAddr,
 		grpc.WithInsecure(),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (conn net.Conn, e error) {
 			return util.DialLocalSocket(addr)

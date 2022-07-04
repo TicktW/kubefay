@@ -9,3 +9,4 @@ USER root
 COPY build/images/scripts/* /usr/local/bin/
 COPY build/scripts/* /usr/local/bin/
 COPY bin/* /usr/local/bin/
+COPY bin/*cni /opt/cni/bin/

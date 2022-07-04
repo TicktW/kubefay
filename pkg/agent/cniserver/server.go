@@ -40,6 +40,7 @@ import (
 	"github.com/TicktW/kubefay/pkg/agent/route"
 	"github.com/TicktW/kubefay/pkg/agent/util"
 	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
+
 	// "github.com/TicktW/kubefay/pkg/apis/controlplane/v1beta2"
 	"github.com/TicktW/kubefay/pkg/cni"
 	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
@@ -374,6 +375,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 		return response, nil
 	}
 
+	klog.Info("==========0========")
 	select {
 	case <-time.After(networkReadyTimeout):
 		klog.Errorf("Cannot process CmdAdd request for container %v because network is not ready", cniConfig.ContainerId)
@@ -381,6 +383,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 	case <-s.networkReadyCh:
 	}
 
+	klog.Info("==========1========")
 	cniVersion := cniConfig.CNIVersion
 	result := &current.Result{CNIVersion: cniVersion}
 	netNS := s.hostNetNsPath(cniConfig.Netns)
@@ -401,6 +404,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 		}
 	}()
 
+	klog.Info("==========2========")
 	infraContainer := cniConfig.getInfraContainer()
 	s.containerAccess.lockContainer(infraContainer)
 	defer s.containerAccess.unlockContainer(infraContainer)
@@ -413,6 +417,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 		return resp, err
 	}
 
+	klog.Info("==========2.1========")
 	var ipamResult *current.Result
 	var err error
 	// Only allocate IP when handling CNI request from infra container.
@@ -423,12 +428,15 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 		}
 	} else {
 		// Request IP Address from IPAM driver.
+		klog.Info("IPAM invoked")
 		ipamResult, err = ipam.ExecIPAMAdd(cniConfig.CniCmdArgs, cniConfig.IPAM.Type, infraContainer)
+		klog.Info("IPAM end-------")
 		if err != nil {
 			klog.Errorf("Failed to request IP addresses for container %v: %v", cniConfig.ContainerId, err)
 			return s.ipamFailureResponse(err), nil
 		}
 	}
+	klog.Info("==========2.2========")
 	klog.Infof("Requested ip addresses for container %v: %v", cniConfig.ContainerId, ipamResult)
 	result.IPs = ipamResult.IPs
 	result.Routes = ipamResult.Routes
@@ -453,6 +461,7 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 		return s.configInterfaceFailureResponse(err), nil
 	}
 
+	klog.Info("==========3========")
 	// Notify the Pod update event to required components.
 	// s.podUpdates <- v1beta2.PodReference{Name: podName, Namespace: podNamespace}
 
@@ -461,6 +470,8 @@ func (s *CNIServer) CmdAdd(ctx context.Context, request *cnipb.CniCmdRequest) (*
 	klog.Infof("CmdAdd for container %v succeeded", cniConfig.ContainerId)
 	// mark success as true to avoid rollback
 	success = true
+
+	klog.Info("==========4========")
 	return &cnipb.CniCmdResponse{CniResult: resultBytes.Bytes()}, nil
 }
 
@@ -547,9 +558,9 @@ func New(
 		kubeClient:           kubeClient,
 		containerAccess:      newContainerAccessArbitrator(),
 		// podUpdates:           podUpdates,
-		isChaining:           isChaining,
-		routeClient:          routeClient,
-		networkReadyCh:       networkReadyCh,
+		isChaining:     isChaining,
+		routeClient:    routeClient,
+		networkReadyCh: networkReadyCh,
 	}
 }
 
