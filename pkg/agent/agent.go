@@ -28,7 +28,7 @@ import (
 
 const (
 	// Default name of the default tunnel interface on the OVS bridge.
-	defaultTunInterfaceName = "antrea-tun0"
+	defaultTunInterfaceName = "kubefay-tun"
 	maxRetryForHostLink     = 5
 	// ipsecPSKEnvKey is environment variable.
 	ipsecPSKEnvKey          = "ANTREA_IPSEC_PSK"

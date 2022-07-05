@@ -47,8 +47,12 @@ spec:
                     type: string
                 usedPool:
                   type: object
+                  additionalProperties:
+                    type: string
             status:
                 type: object
                 properties:
                     poolStatus:
+                      type: string
+                    ipamEvent:
                       type: string

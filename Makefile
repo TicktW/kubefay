@@ -140,10 +140,28 @@ kube-get-pod:
 kube-log-pod:
 	kubectl -n kube-system logs $$(kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | xargs | awk '{print $$1}')
 
-.PHONY: kube-exec-pod
-kube-exec-pod:
-	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po | grep kubefay-agent | awk '{print $$1}' | head -1) -- bash
+.PHONY: kube-exec-agent-master
+kube-exec-agent-master:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-control-plane | awk '{print $$1}') -- bash
 
+.PHONY: kube-exec-agent-worker
+kube-exec-agent-worker:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-worker | awk '{print $$1}') -- bash
+
+
+.PHONY: kube-exec-agent-master-ovs
+kube-exec-agent-master-ovs:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-control-plane | awk '{print $$1}') --container kubefay-ovs -- bash
+
+.PHONY: kube-exec-worker-openflow
+kube-exec-worker-openflow:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-worker | awk '{print $$1}') --container kubefay-ovs -- ovs-ofctl dump-flows br-int
+
+.PHONY: kube-exec-master-openflow
+kube-exec-master-openflow:
+	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-control-plane | awk '{print $$1}') --container kubefay-ovs -- ovs-ofctl dump-flows br-int
+
+# ks exec -it kubefay-agent-cpvwj --container kubefay-ovs -- bash
 .PHONY: dev-small-round
 dev-small-round:
 	make bin
@@ -160,9 +178,17 @@ dev-big-round:
 	make cluster
 	make cluster-load-image
 	make manifest-apply
+	make test-app-apply
 	make kube-get-pod
 	make kube-log-pod
 
 .PHONY: docker-exec-kind-node
 docker-exec-kind-node:
 	docker exec -it $$(docker ps | grep kindest | grep node | awk '{print $$1}' | head -1) bash
+
+.PHONY: test-app-apply
+test-app-apply:
+	kubectl apply -f examples/app-master.yml
+	kubectl apply -f examples/app-worker.yml
+
+# ovs-appctl ofproto/trace br-int

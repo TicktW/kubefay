@@ -108,7 +108,7 @@ func (s *Store) Reserve(id string, ifname string, requestedIP net.IP, rangeID st
 	capNumStr := strconv.Itoa(capNum)
 
 	if usedNum == capNum {
-		return false, fmt.Errorf("The IP of Subnet:%s has used up. used IPs: %s, cap: %s", copySubnet.Name, usedNum, capNum)
+		return false, fmt.Errorf("the IP of Subnet:%s has used up. used IPs: %d, cap: %d", copySubnet.Name, usedNum, capNum)
 	}
 
 	// whether IP has been used
@@ -127,7 +127,9 @@ func (s *Store) Reserve(id string, ifname string, requestedIP net.IP, rangeID st
 	copySubnet.Status.PoolStatus = usedNumStr + "/" + capNumStr
 	copySubnet.Status.IPAMEvent = "POD_ADD"
 	_, err = s.subnetclientset.IpamV1alpha1().SubNets("default").Update(context.TODO(), copySubnet, metav1.UpdateOptions{})
+	klog.Infof("update subnet..........%+v", copySubnet)
 	if err != nil {
+		klog.Info("=============================")
 		klog.Error(err)
 		return false, err
 	}

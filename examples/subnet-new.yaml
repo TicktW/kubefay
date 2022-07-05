@@ -1,0 +1,7 @@
+apiVersion: kubefay.ticktw.github.com/v1alpha1
+kind: SubNet
+metadata:
+  name: newnet
+spec:
+  ipVersion: v4
+  cidr: 10.182.0.0/16

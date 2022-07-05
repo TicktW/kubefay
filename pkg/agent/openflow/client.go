@@ -599,9 +599,9 @@ func (c *client) InstallGatewayFlows() error {
 	flows = append(flows, c.localProbeFlow(gatewayIPs, cookie.Default)...)
 	flows = append(flows, c.ctRewriteDstMACFlows(gatewayConfig.MAC, cookie.Default)...)
 	// In NoEncap , no traffic from tunnel port
-	if c.encapMode.SupportsEncap() {
-		flows = append(flows, c.l3FwdFlowToGateway(gatewayIPs, gatewayConfig.MAC, cookie.Default)...)
-	}
+	// if c.encapMode.SupportsEncap() {
+	flows = append(flows, c.l3FwdFlowToGateway(gatewayIPs, gatewayConfig.MAC, cookie.Default)...)
+	// }
 
 	if err := c.ofEntryOperations.AddAll(flows); err != nil {
 		return err
@@ -654,11 +654,11 @@ func (c *client) initialize() error {
 	if err := c.ofEntryOperations.AddAll(c.establishedConnectionFlows(cookie.Default)); err != nil {
 		return fmt.Errorf("failed to install flows to skip established connections: %v", err)
 	}
-	if c.encapMode.IsNetworkPolicyOnly() {
-		if err := c.setupPolicyOnlyFlows(); err != nil {
-			return fmt.Errorf("failed to setup policy only flows: %w", err)
-		}
-	}
+	// if c.encapMode.IsNetworkPolicyOnly() {
+	// 	if err := c.setupPolicyOnlyFlows(); err != nil {
+	// 		return fmt.Errorf("failed to setup policy only flows: %w", err)
+	// 	}
+	// }
 	return nil
 }
 

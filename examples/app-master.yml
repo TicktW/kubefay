@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ipam-deployment
+  name: test-master
   labels:
-    app: ipam-app
+    app: test-master
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: ipam-app
+      app: test-master
   template:
     metadata:
       labels:
-        app: ipam-app
+        app: test-master
     spec:
       nodeName: kind-control-plane         
       containers:
-      - name: nginx
-        image: projects.registry.vmware.com/antrea/antrea-ubuntu:latest
+      - name: kubefay
+        image: kubefay/kubefay-ubuntu:latest
         imagePullPolicy: Never
         command: [ "/bin/sh","-c","python3 -m http.server" ]
         ports:

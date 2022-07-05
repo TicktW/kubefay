@@ -192,6 +192,7 @@ type conjMatchFlowContext struct {
 	// conjMatchFlowContext is removed from the cache.
 	dropFlow binding.Flow
 }
+
 // GetFlowTableName returns the flow table name given the table number. An empty
 // string is returned if the table cannot be found.
 func GetFlowTableName(tableNumber binding.TableIDType) string {
@@ -837,9 +838,10 @@ func (c *client) l2ForwardOutputServiceHairpinFlow() binding.Flow {
 // l2ForwardOutputFlows generates the flows that output packets to OVS port after L2 forwarding calculation.
 func (c *client) l2ForwardOutputFlows(category cookie.Category) []binding.Flow {
 	var flows []binding.Flow
+	klog.Infof("@@@@@@@@@@@@@@@@@@@@@%v, %v, %v", marksReg, portFoundMark, ofPortMarkRange)
 	flows = append(flows,
 		c.pipeline[L2ForwardingOutTable].BuildFlow(priorityNormal).MatchProtocol(binding.ProtocolIP).
-			MatchRegRange(int(marksReg), portFoundMark, ofPortMarkRange).
+			// MatchRegRange(int(marksReg), portFoundMark, ofPortMarkRange).
 			Action().OutputRegRange(int(PortCacheReg), ofPortRegRange).
 			Cookie(c.cookieAllocator.Request(category).Raw()).
 			Done(),
@@ -849,6 +851,7 @@ func (c *client) l2ForwardOutputFlows(category cookie.Category) []binding.Flow {
 			Cookie(c.cookieAllocator.Request(category).Raw()).
 			Done(),
 	)
+
 	return flows
 }
 
@@ -1155,7 +1158,7 @@ func (c *client) arpSpoofGuardFlow(ifIP net.IP, ifMAC net.HardwareAddr, ifOFPort
 // case will occur if an Endpoint is removed and is the learned Endpoint
 // selection of the Service.
 func (c *client) sessionAffinityReselectFlow() binding.Flow {
-	klog.Infof("%+v",c.pipeline[endpointDNATTable])
+	klog.Infof("%+v", c.pipeline[endpointDNATTable])
 	klog.Info("in seesion openflow")
 	return c.pipeline[endpointDNATTable].BuildFlow(priorityLow).
 		MatchRegRange(int(serviceLearnReg), marksRegServiceSelected, serviceLearnRegRange).
@@ -2018,10 +2021,10 @@ func NewClient(bridgeName, mgmtAddr string, enableProxy, enableAntreaPolicy bool
 		podFlowCache:       newFlowCategoryCache(),
 		serviceFlowCache:   newFlowCategoryCache(),
 		// policyCache:              policyCache,
-		groupCache:               sync.Map{},
+		groupCache: sync.Map{},
 		// globalConjMatchFlowCache: map[string]*conjMatchFlowContext{},
-		packetInHandlers:         map[uint8]map[string]PacketInHandler{},
-		ovsctlClient:             ovsctl.NewClient(bridgeName),
+		packetInHandlers: map[uint8]map[string]PacketInHandler{},
+		ovsctlClient:     ovsctl.NewClient(bridgeName),
 	}
 	c.ofEntryOperations = c
 	if enableAntreaPolicy {

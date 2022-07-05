@@ -42,17 +42,17 @@ const (
 	genevePort = 6081
 
 	// Kubefay managed ipset.
-	// kubefayPodIPSet contains all Pod CIDRs of this cluster.
-	kubefayPodIPSet = "KUBEFAY-POD-IP"
-	// kubefayPodIP6Set contains all IPv6 Pod CIDRs of this cluster.
-	kubefayPodIP6Set = "KUBEFAY-POD-IP6"
+	// KubefayPodIPSet contains all Pod CIDRs of this cluster.
+	KubefayPodIPSet = "KUBEFAY-POD-IP"
+	// KubefayPodIP6Set contains all IPv6 Pod CIDRs of this cluster.
+	KubefayPodIP6Set = "KUBEFAY-POD-IP6"
 
 	// Kubefay managed iptables chains.
-	kubefayForwardChain     = "KUBEFAY-FORWARD"
-	kubefayPreRoutingChain  = "KUBEFAY-PREROUTING"
-	kubefayPostRoutingChain = "KUBEFAY-POSTROUTING"
-	kubefayOutputChain      = "KUBEFAY-OUTPUT"
-	kubefayMangleChain      = "KUBEFAY-MANGLE"
+	KubefayForwardChain     = "KUBEFAY-FORWARD"
+	KubefayPreRoutingChain  = "KUBEFAY-PREROUTING"
+	KubefayPostRoutingChain = "KUBEFAY-POSTROUTING"
+	KubefayOutputChain      = "KUBEFAY-OUTPUT"
+	KubefayMangleChain      = "KUBEFAY-MANGLE"
 )
 
 // Client implements Interface.
@@ -66,12 +66,12 @@ var (
 
 // Client takes care of routing container packets in host network, coordinating ip route, ip rule, iptables and ipset.
 type Client struct {
-	nodeConfig    *config.NodeConfig
+	nodeConfig *config.NodeConfig
 	// networkConfig *config.NetworkConfig
-	tunnelType ovsconfig.TunnelType
-	noSNAT        bool
-	serviceCIDR   *net.IPNet
-	ipt           *iptables.Client
+	tunnelType  ovsconfig.TunnelType
+	noSNAT      bool
+	serviceCIDR *net.IPNet
+	ipt         *iptables.Client
 	// nodeRoutes caches ip routes to remote Pods. It's a map of podCIDR to routes.
 	nodeRoutes sync.Map
 	// nodeNeighbors caches IPv6 Neighbors to remote host gateway
@@ -83,10 +83,10 @@ type Client struct {
 // leaving it here is to be compatible with the implementation on Windows.
 func NewClient(serviceCIDR *net.IPNet, tunnelType ovsconfig.TunnelType, noSNAT bool) (*Client, error) {
 	return &Client{
-		serviceCIDR:   serviceCIDR,
+		serviceCIDR: serviceCIDR,
 		// networkConfig: networkConfig,
 		tunnelType: tunnelType,
-		noSNAT:        noSNAT,
+		noSNAT:     noSNAT,
 	}, nil
 }
 
@@ -134,10 +134,10 @@ func (c *Client) initIPSet() error {
 	// if c.networkConfig.TrafficEncapMode.IsNetworkPolicyOnly() {
 	// 	return nil
 	// }
-	if err := ipset.CreateIPSet(kubefayPodIPSet, ipset.HashNet, false); err != nil {
+	if err := ipset.CreateIPSet(KubefayPodIPSet, ipset.HashNet, false); err != nil {
 		return err
 	}
-	if err := ipset.CreateIPSet(kubefayPodIP6Set, ipset.HashNet, true); err != nil {
+	if err := ipset.CreateIPSet(KubefayPodIP6Set, ipset.HashNet, true); err != nil {
 		return err
 	}
 
@@ -155,9 +155,9 @@ func (c *Client) initIPSet() error {
 
 func getIPSetName(ip net.IP) string {
 	if ip.To4() == nil {
-		return kubefayPodIP6Set
+		return KubefayPodIP6Set
 	}
-	return kubefayPodIPSet
+	return KubefayPodIPSet
 }
 
 // writeEKSMangleRule writes an additional iptables mangle rule to the
@@ -176,7 +176,7 @@ func (c *Client) writeEKSMangleRule(iptablesData *bytes.Buffer) {
 	// rule.
 	klog.V(2).Infof("Add iptable mangle rule for EKS to ensure correct reverse path for NodePort Service traffic")
 	writeLine(iptablesData, []string{
-		"-A", kubefayMangleChain,
+		"-A", KubefayMangleChain,
 		"-m", "comment", "--comment", `"Kubefay: AWS, primary ENI"`,
 		"-i", c.nodeConfig.GatewayConfig.Name, "-j", "CONNMARK",
 		"--restore-mark", "--nfmask", "0x80", "--ctmask", "0x80",
@@ -199,11 +199,11 @@ func (c *Client) initIPTables() error {
 	// We cannot use iptables-restore for these jump rules because there
 	// are non kubefay managed rules in built-in chains.
 	jumpRules := []struct{ table, srcChain, dstChain, comment string }{
-		{iptables.RawTable, iptables.PreRoutingChain, kubefayPreRoutingChain, "Kubefay: jump to Kubefay prerouting rules"},
-		{iptables.RawTable, iptables.OutputChain, kubefayOutputChain, "Kubefay: jump to Kubefay output rules"},
-		{iptables.FilterTable, iptables.ForwardChain, kubefayForwardChain, "Kubefay: jump to Kubefay forwarding rules"},
-		{iptables.NATTable, iptables.PostRoutingChain, kubefayPostRoutingChain, "Kubefay: jump to Kubefay postrouting rules"},
-		{iptables.MangleTable, iptables.PreRoutingChain, kubefayMangleChain, "Kubefay: jump to Kubefay mangle rules"},
+		{iptables.RawTable, iptables.PreRoutingChain, KubefayPreRoutingChain, "Kubefay: jump to Kubefay prerouting rules"},
+		{iptables.RawTable, iptables.OutputChain, KubefayOutputChain, "Kubefay: jump to Kubefay output rules"},
+		{iptables.FilterTable, iptables.ForwardChain, KubefayForwardChain, "Kubefay: jump to Kubefay forwarding rules"},
+		{iptables.NATTable, iptables.PostRoutingChain, KubefayPostRoutingChain, "Kubefay: jump to Kubefay postrouting rules"},
+		{iptables.MangleTable, iptables.PreRoutingChain, KubefayMangleChain, "Kubefay: jump to Kubefay mangle rules"},
 	}
 	for _, rule := range jumpRules {
 		if err := c.ipt.EnsureChain(rule.table, rule.dstChain); err != nil {
@@ -217,7 +217,7 @@ func (c *Client) initIPTables() error {
 
 	// Use iptables-restore to configure IPv4 settings.
 	if v4Enabled {
-		iptablesData := c.restoreIptablesData(c.nodeConfig.PodIPv4CIDR, kubefayPodIPSet)
+		iptablesData := c.restoreIptablesData(c.nodeConfig.PodIPv4CIDR, KubefayPodIPSet)
 		// Setting --noflush to keep the previous contents (i.e. non kubefay managed chains) of the tables.
 		if err := c.ipt.Restore(iptablesData.Bytes(), false, false); err != nil {
 			return err
@@ -226,7 +226,7 @@ func (c *Client) initIPTables() error {
 
 	// Use ip6tables-restore to configure IPv6 settings.
 	if v6Enabled {
-		iptablesData := c.restoreIptablesData(c.nodeConfig.PodIPv6CIDR, kubefayPodIP6Set)
+		iptablesData := c.restoreIptablesData(c.nodeConfig.PodIPv6CIDR, KubefayPodIP6Set)
 		// Setting --noflush to keep the previous contents (i.e. non kubefay managed chains) of the tables.
 		if err := c.ipt.Restore(iptablesData.Bytes(), false, true); err != nil {
 			return err
@@ -242,8 +242,8 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	iptablesData := bytes.NewBuffer(nil)
 	// Write head lines anyway so the undesired rules can be deleted when changing encap mode.
 	writeLine(iptablesData, "*raw")
-	writeLine(iptablesData, iptables.MakeChainLine(kubefayPreRoutingChain))
-	writeLine(iptablesData, iptables.MakeChainLine(kubefayOutputChain))
+	writeLine(iptablesData, iptables.MakeChainLine(KubefayPreRoutingChain))
+	writeLine(iptablesData, iptables.MakeChainLine(KubefayOutputChain))
 
 	// For Geneve and VXLAN encapsulation packets, the request and response packets don't belong to a UDP connection
 	// so tracking them doesn't give the normal benefits of conntrack. Besides, kube-proxy may install great number
@@ -257,14 +257,14 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	}
 	if udpPort > 0 {
 		writeLine(iptablesData, []string{
-			"-A", kubefayPreRoutingChain,
+			"-A", KubefayPreRoutingChain,
 			"-m", "comment", "--comment", `"Kubefay: do not track incoming encapsulation packets"`,
 			"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
 			"-m", "addrtype", "--dst-type", "LOCAL",
 			"-j", iptables.NoTrackTarget,
 		}...)
 		writeLine(iptablesData, []string{
-			"-A", kubefayOutputChain,
+			"-A", KubefayOutputChain,
 			"-m", "comment", "--comment", `"Kubefay: do not track outgoing encapsulation packets"`,
 			"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
 			"-m", "addrtype", "--src-type", "LOCAL",
@@ -275,7 +275,7 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 
 	// Write head lines anyway so the undesired rules can be deleted when noEncap -> encap.
 	writeLine(iptablesData, "*mangle")
-	writeLine(iptablesData, iptables.MakeChainLine(kubefayMangleChain))
+	writeLine(iptablesData, iptables.MakeChainLine(KubefayMangleChain))
 	hostGateway := c.nodeConfig.GatewayConfig.Name
 	// When Kubefay is used to enforce NetworkPolicies in EKS, an additional iptables
 	// mangle rule is required. See https://github.com/TicktW/kubefay/issues/678.
@@ -285,15 +285,15 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	writeLine(iptablesData, "COMMIT")
 
 	writeLine(iptablesData, "*filter")
-	writeLine(iptablesData, iptables.MakeChainLine(kubefayForwardChain))
+	writeLine(iptablesData, iptables.MakeChainLine(KubefayForwardChain))
 	writeLine(iptablesData, []string{
-		"-A", kubefayForwardChain,
+		"-A", KubefayForwardChain,
 		"-m", "comment", "--comment", `"Kubefay: accept packets from local pods"`,
 		"-i", hostGateway,
 		"-j", iptables.AcceptTarget,
 	}...)
 	writeLine(iptablesData, []string{
-		"-A", kubefayForwardChain,
+		"-A", KubefayForwardChain,
 		"-m", "comment", "--comment", `"Kubefay: accept packets to local pods"`,
 		"-o", hostGateway,
 		"-j", iptables.AcceptTarget,
@@ -301,10 +301,12 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	writeLine(iptablesData, "COMMIT")
 
 	writeLine(iptablesData, "*nat")
-	writeLine(iptablesData, iptables.MakeChainLine(kubefayPostRoutingChain))
+	writeLine(iptablesData, iptables.MakeChainLine(KubefayPostRoutingChain))
+	klog.Info("--out------------------------------- add host iptalb rules")
 	if !c.noSNAT {
+		klog.Info("--------------------------------- add host iptalb rules")
 		writeLine(iptablesData, []string{
-			"-A", kubefayPostRoutingChain,
+			"-A", KubefayPostRoutingChain,
 			"-m", "comment", "--comment", `"Kubefay: masquerade pod to external packets"`,
 			"-s", podCIDR.String(), "-m", "set", "!", "--match-set", podIPSet, "dst",
 			"-j", iptables.MasqueradeTarget,
@@ -331,7 +333,7 @@ func (c *Client) Reconcile(podCIDRs []string) error {
 	desiredPodCIDRs := sets.NewString(podCIDRs...)
 
 	// Remove orphaned podCIDRs from ipset.
-	for _, ipsetName := range []string{kubefayPodIPSet, kubefayPodIP6Set} {
+	for _, ipsetName := range []string{KubefayPodIPSet, KubefayPodIP6Set} {
 		entries, err := ipset.ListEntries(ipsetName)
 		if err != nil {
 			return err

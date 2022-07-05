@@ -9,6 +9,7 @@ import (
 
 	"github.com/TicktW/kubefay/pkg/agent/config"
 	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
+	"github.com/TicktW/kubefay/pkg/agent/route"
 	"github.com/TicktW/kubefay/pkg/agent/util"
 	"github.com/containernetworking/plugins/pkg/ip"
 	"github.com/vishvananda/netlink"
@@ -35,7 +36,8 @@ func addSubnetHandler(c *Controller, key string) error {
 	_, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", key))
-		return nil
+		klog.Errorf("split meta name space key err: %s", err)
+		return err
 	}
 
 	// for default subnet, only need to install l3 fwd to gateway flow
@@ -85,7 +87,7 @@ func addSubnetHandler(c *Controller, key string) error {
 	}
 
 	// add nat rules for subnet
-	err = c.ipt.AppendNat(antreaPostRoutingChain, podNet.String())
+	err = c.ipt.AppendNat(route.KubefayPostRoutingChain, podNet.String())
 	if err != nil {
 		return err
 	}

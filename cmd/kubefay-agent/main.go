@@ -38,7 +38,7 @@ const (
 	defaultHostGateway             = "kubefay-gw0"
 	defaultHostProcPathPrefix      = "/host"
 	defaultServiceCIDR             = "10.96.0.0/12"
-	defaultTunnelType              = ovsconfig.GeneveTunnel
+	defaultTunnelType              = ovsconfig.VXLANTunnel
 	defaultFlowCollectorAddress    = "flow-aggregator.flow-aggregator.svc:4739:tls"
 	defaultFlowCollectorTransport  = "tls"
 	defaultFlowCollectorPort       = "4739"
@@ -125,7 +125,7 @@ func run() error {
 	_, serviceCIDRNet, _ := net.ParseCIDR(defaultServiceCIDR)
 
 	klog.Info("set up route client...")
-	routeClient, err := route.NewClient(serviceCIDRNet, defaultTunnelType, true)
+	routeClient, err := route.NewClient(serviceCIDRNet, defaultTunnelType, false)
 	if err != nil {
 		return fmt.Errorf("error creating route client: %v", err)
 	}

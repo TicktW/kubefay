@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ipam-deployment
+  name: test-worker
+  namespace: kubefay-test
   labels:
-    app: ipam-app
+    app: test-worker
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: ipam-app
+      app: test-worker
   template:
     metadata:
       labels:
-        app: ipam-app
+        app: test-worker
     spec:
-      nodeName: kind-control-plane         
+      nodeName: kind-worker
       containers:
-      - name: nginx
+      - name: kubefay
         image: kubefay/kubefay-ubuntu:latest
         imagePullPolicy: Never
         command: [ "/bin/sh","-c","python3 -m http.server" ]

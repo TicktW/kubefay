@@ -29,7 +29,7 @@ USER root
 # chmod in the RUN command below instead.
 ADD iptables-wrapper-installer.sh /iptables-wrapper-installer.sh
 
-RUN apt-get update && apt-get install -y --no-install-recommends ipset jq && \
+RUN apt-get update && apt-get install -y --no-install-recommends ipset jq inetutils-ping && \
     rm -rf /var/lib/apt/lists/* && \
     chmod +x /iptables-wrapper-installer.sh && \
     /iptables-wrapper-installer.sh
