@@ -53,5 +53,5 @@ func init() {
 	dispatcher.Register("subnet/add", addSubnetHandler)
 	dispatcher.Register("subnet/update", updateSubnetHandler)
 	dispatcher.Register("subnet/del", delSubnetHandler)
-	klog.Info("register dispathcer:", dispatcher.handlersPool)
+	klog.V(5).Infof("register dispathcer:", dispatcher.handlersPool)
 }

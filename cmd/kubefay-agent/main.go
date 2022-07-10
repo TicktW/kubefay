@@ -1,9 +1,3 @@
-/*
- * @Author: TicktW wxjpython@gmail.com
- * @Description: MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
- */
-// MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
-
 package main
 
 import (
@@ -53,6 +47,14 @@ const (
 	HostProcPathPrefix             = "/"
 )
 
+type KubefayConf struct {
+	tunnelType   string
+	datapathType string
+	serviceCIDR  string
+}
+
+const informerDefaultResync = 12 * time.Hour
+
 func main() {
 
 	cmd := newAgentCommand()
@@ -61,15 +63,32 @@ func main() {
 }
 
 func newAgentCommand() *cobra.Command {
+	config := KubefayConf{}
+
 	cmd := &cobra.Command{
-		Use: "kubefay-agent",
+		Use:   "kubefay-agent",
+		Short: "kubefay-agent is the agent daemon for Kubefay CNI plugin",
+		Long: `
+Kubefay provide a virtual network for kubernetes. 
+Kubefay design as a SDN network structure.
+The agent is the control plane and Open vSwtich is the data plane.
+		`,
 		Run: func(cmd *cobra.Command, args []string) {
+			// define floags here
+			fmt.Println(config.tunnelType)
+			if err := validate(&config); err != nil {
+				klog.Fatalf("Error running agent: %v", err)
+			}
 			if err := run(); err != nil {
 				klog.Fatalf("Error running agent: %v", err)
 			}
 		},
 		Version: version.GetFullVersionWithRuntimeInfo(),
 	}
+
+	cmd.PersistentFlags().StringVarP(&config.tunnelType, "tunnel_type", "t", "vxlan", "set default tunnel type for Kubefay network")
+	cmd.PersistentFlags().StringVarP(&config.datapathType, "datapath_type", "d", "system", "set default datapath type for OVS, system or netdev")
+	cmd.PersistentFlags().StringVarP(&config.serviceCIDR, "service_cidr", "s", defaultServiceCIDR, "service CIDR")
 
 	flags := cmd.Flags()
 	klog.InitFlags(nil)
@@ -78,9 +97,24 @@ func newAgentCommand() *cobra.Command {
 	return cmd
 }
 
-const informerDefaultResync = 12 * time.Hour
+func validate(config *KubefayConf) error {
 
-func run() error {
+	if !ovsconfig.DatapathSets.Contains(config.datapathType) {
+		return fmt.Errorf("%s erorr, should be in %v", config.datapathType, ovsconfig.DatapathSets)
+	}
+
+	if !ovsconfig.TunnelSets.Contains(config.tunnelType) {
+		return fmt.Errorf("%s erorr, should be in %v", config.tunnelType, ovsconfig.TunnelSets)
+	}
+
+	if _, _, err := net.ParseCIDR(config.serviceCIDR); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func run(config *KubefayConf) error {
 	klog.Infof("kubefay agent (version %s)", version.GetFullVersion())
 	// logs.GlogSetter("5")
 
@@ -113,7 +147,8 @@ func run() error {
 	}
 	defer ovsdbConnection.Close()
 
-	ovsBridgeClient := ovsconfig.NewOVSBridge(defaultOVSBridge, ovsconfig.OVSDatapathNetdev, ovsdbConnection)
+	// ovsBridgeClient := ovsconfig.NewOVSBridge(defaultOVSBridge, ovsconfig.OVSDatapathNetdev, ovsdbConnection)
+	ovsBridgeClient := ovsconfig.NewOVSBridge(defaultOVSBridge, config.datapathType, ovsdbConnection)
 	ovsBridgeMgmtAddr := ofconfig.GetMgmtAddress(ovsconfig.DefaultOVSRunDir, defaultOVSBridge)
 
 	klog.Info("makeing openflow client...")
@@ -122,10 +157,10 @@ func run() error {
 		false,
 	)
 
-	_, serviceCIDRNet, _ := net.ParseCIDR(defaultServiceCIDR)
+	_, serviceCIDRNet, _ := net.ParseCIDR(config.serviceCIDR)
 
 	klog.Info("set up route client...")
-	routeClient, err := route.NewClient(serviceCIDRNet, defaultTunnelType, false)
+	routeClient, err := route.NewClient(serviceCIDRNet, ovsconfig.TunnelType(config.tunnelType), false)
 	if err != nil {
 		return fmt.Errorf("error creating route client: %v", err)
 	}
@@ -142,7 +177,7 @@ func run() error {
 		defaultOVSBridge,
 		defaultHostGateway,
 		defaultMTU,
-		defaultTunnelType,
+		config.tunnelType,
 		DefaultSubnetCIDRv4,
 		serviceCIDRNet,
 		routeClient,
@@ -165,7 +200,8 @@ func run() error {
 		routeClient,
 		networkReadyCh)
 	// TODO datapath type need to be configured
-	err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, ovsconfig.OVSDatapathNetdev)
+	// err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, ovsconfig.OVSDatapathNetdev)
+	err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, config.datapathType)
 	if err != nil {
 		return fmt.Errorf("error initializing CNI server: %v", err)
 	}

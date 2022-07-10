@@ -34,6 +34,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.16-0.20201130162521-d1ffc52c7331
 	github.com/Microsoft/hcsshim v0.8.9
 	github.com/TomCodeLV/OVSDB-golang-lib v0.0.0-20200116135253-9bbdfadcd881
+	github.com/deckarep/golang-set/v2 v2.1.0
 )
 
 require (

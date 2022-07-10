@@ -117,15 +117,26 @@ bin:
 clean:
 	rm -r $(BINDIR)
 
-.PHONY: manifest-gen
-manifest-gen:
+.PHONY: manifest-gen-kind
+manifest-gen-kind:
 	@echo "Generating dev manifest for Kubefay"
 	helm template kubefay  --dry-run ./build/helm/kubefay/
 
-.PHONY: manifest-apply
+.PHONY: manifest-gen
+manifest-gen:
+	@echo "Generating dev manifest for Kubefay"
+	helm template kubefay --set kindCluster.enabled=false  --dry-run ./build/helm/kubefay/ > kubefay.yaml
+
+.PHONY: manifest-apply-kind
 manifest-apply:
 	@echo "===> Generating dev manifest for Antrea <==="
 	helm template kubefay  --dry-run ./build/helm/kubefay/ | kubectl apply -f -
+	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
+
+.PHONY: manifest-apply-kind
+manifest-apply:
+	@echo "===> Generating dev manifest for Antrea <==="
+	helm template kubefay --set kindCluster.enabled=false --dry-run ./build/helm/kubefay/ | kubectl apply -f -
 	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
 
 .PHONY: kube-clean-pod
@@ -182,8 +193,8 @@ dev-big-round:
 	make kube-get-pod
 	make kube-log-pod
 
-.PHONY: docker-exec-kind-node
-docker-exec-kind-node:
+.PHONY: exec-kind-node
+exec-kind-node:
 	docker exec -it $$(docker ps | grep kindest | grep node | awk '{print $$1}' | head -1) bash
 
 .PHONY: test-app-apply
@@ -192,3 +203,23 @@ test-app-apply:
 	kubectl apply -f examples/app-worker.yml
 
 # ovs-appctl ofproto/trace br-int
+.PHONY: minikube-img-load
+minikube-img-load:
+	minikube image load kubefay/kubefay-ubuntu:latest
+
+.PHONY: minikube-img-reload
+minikube-img-reload:
+	minikube image tag kubefay/kubefay-ubuntu:latest kubefay/kubefay-ubuntu:0.0.1
+	minikube image load kubefay/kubefay-ubuntu:latest
+
+.PHONY: minikube-cluster
+minikube-cluster:
+	minikube start --driver kvm2 --registry-mirror=https://registry.docker-cn.com --image-mirror-country cn --extra-config=kubelet.cgroup-driver=systemd --kubernetes-version=v1.18.8 -n 1 --cni=kubefay.yaml
+
+.PHONY: minikube-dev-round
+minikube-dev-round:
+	minikube delete
+	make bin
+	make build-ubuntu
+	make minikube-cluster
+	make minikube-img-load

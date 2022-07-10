@@ -72,6 +72,8 @@ spec:
           - name: host-depmod
             mountPath: /sbin/depmod
             readOnly: true
+          - name: host-var-run-kubefay
+            mountPath: /var/run/kubefay
       containers:
         - name: kubefay-agent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

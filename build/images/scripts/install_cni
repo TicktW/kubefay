@@ -31,13 +31,15 @@ if [[ ! " ${binaries[*]} " =~ " bandwidth " ]]; then
 fi
 
 # Install whereabouts IPAM binary file. Required for global IPAM support specific to CNF use cases.
-if [[ ! " ${binaries[*]} " =~ " whereabouts " ]]; then
-  install -m 755 /opt/cni/bin/whereabouts /host/opt/cni/bin/whereabouts
-fi
+# if [[ ! " ${binaries[*]} " =~ " whereabouts " ]]; then
+#   install -m 755 /opt/cni/bin/whereabouts /host/opt/cni/bin/whereabouts
+# fi
 
 # Install kubefay configuration file.
 # Note that it needs to be executed after installing the above binaries because container runtimes such as cri-o may
 # watch the conf directory and try to validate the config and binaries immediately once there is a change.
+
+rm -rf /host/etc/cni/net.d/*.conflist  # clean other cni's config
 install -m 644 /etc/kubefay/kubefay-cni.conflist /host/etc/cni/net.d/10-kubefay.conflist
 
 # If more than one CNI config file exists, the file with the lowest name is
@@ -50,7 +52,7 @@ modprobe openvswitch || (echo "Failed to load the OVS kernel module from the con
 
 # Load the WireGuard kernel module. This is only required when WireGuard encryption is enabled.
 # We could parse the kubefay config file in the init-container to dynamically load this kernel module in the future.
-modprobe wireguard || (echo "Failed to load the WireGuard kernel module, WireGuard encryption will not be available")
+# modprobe wireguard || (echo "Failed to load the WireGuard kernel module, WireGuard encryption will not be available")
 
 # Change the default permissions of the run directory.
 chmod 0750 /var/run/kubefay

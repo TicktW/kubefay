@@ -14,6 +14,8 @@
 
 package ovsconfig
 
+import mapset "github.com/deckarep/golang-set/v2"
+
 type TunnelType string
 
 const (
@@ -25,6 +27,21 @@ const (
 	OVSDatapathSystem = "system"
 	OVSDatapathNetdev = "netdev"
 )
+
+var TunnelSets mapset.Set[string]
+var DatapathSets mapset.Set[string]
+
+func init() {
+	TunnelSets = mapset.NewSet[string]()
+	TunnelSets.Add(GeneveTunnel)
+	TunnelSets.Add(VXLANTunnel)
+	TunnelSets.Add(GRETunnel)
+	TunnelSets.Add(STTTunnel)
+
+	DatapathSets = mapset.NewSet[string]()
+	DatapathSets.Add(OVSDatapathNetdev)
+	DatapathSets.Add(OVSDatapathSystem)
+}
 
 type OVSBridgeClient interface {
 	Create() Error
