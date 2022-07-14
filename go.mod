@@ -25,7 +25,10 @@ require (
 )
 
 require (
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
+	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/juju/errors v0.0.0-20220622220526-54a94488269b // indirect
+	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 )
@@ -35,6 +38,7 @@ require (
 	github.com/Microsoft/hcsshim v0.8.9
 	github.com/TomCodeLV/OVSDB-golang-lib v0.0.0-20200116135253-9bbdfadcd881
 	github.com/deckarep/golang-set/v2 v2.1.0
+	github.com/smartystreets/goconvey v1.7.2
 )
 
 require (

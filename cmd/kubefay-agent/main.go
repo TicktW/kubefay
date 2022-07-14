@@ -124,8 +124,8 @@ func run(config *KubefayConf) error {
 	klog.V(3).Infof("kubefay agent 3 (version %s)", version.GetFullVersion())
 	klog.V(4).Infof("kubefay agent 4 (version %s)", version.GetFullVersion())
 	klog.V(5).Infof("kubefay agent 5 (version %s)", version.GetFullVersion())
-	klog.Info("create k8s clients")
 
+	klog.Info("create k8s clients")
 	k8sConfig := componentbaseconfig.ClientConnectionConfiguration{}
 	k8sClient, crdClient, err := k8s.CreateClients(k8sConfig)
 
