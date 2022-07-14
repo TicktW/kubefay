@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"strconv"
 	"sync"
 	"time"
 
@@ -249,28 +248,28 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	// so tracking them doesn't give the normal benefits of conntrack. Besides, kube-proxy may install great number
 	// of iptables rules in nat table. The first encapsulation packets of connections would have to go through all
 	// of the rules which wastes CPU and increases packet latency.
-	udpPort := 0
-	if c.tunnelType == ovsconfig.GeneveTunnel {
-		udpPort = genevePort
-	} else if c.tunnelType == ovsconfig.VXLANTunnel {
-		udpPort = vxlanPort
-	}
-	if udpPort > 0 {
-		writeLine(iptablesData, []string{
-			"-A", KubefayPreRoutingChain,
-			"-m", "comment", "--comment", `"Kubefay: do not track incoming encapsulation packets"`,
-			"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
-			"-m", "addrtype", "--dst-type", "LOCAL",
-			"-j", iptables.NoTrackTarget,
-		}...)
-		writeLine(iptablesData, []string{
-			"-A", KubefayOutputChain,
-			"-m", "comment", "--comment", `"Kubefay: do not track outgoing encapsulation packets"`,
-			"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
-			"-m", "addrtype", "--src-type", "LOCAL",
-			"-j", iptables.NoTrackTarget,
-		}...)
-	}
+	// udpPort := 0
+	// if c.tunnelType == ovsconfig.GeneveTunnel {
+	// 	udpPort = genevePort
+	// } else if c.tunnelType == ovsconfig.VXLANTunnel {
+	// 	udpPort = vxlanPort
+	// }
+	// if udpPort > 0 {
+	// 	writeLine(iptablesData, []string{
+	// 		"-A", KubefayPreRoutingChain,
+	// 		"-m", "comment", "--comment", `"Kubefay: do not track incoming encapsulation packets"`,
+	// 		"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
+	// 		"-m", "addrtype", "--dst-type", "LOCAL",
+	// 		"-j", iptables.ConnTrackTarget, "--notrack",
+	// 	}...)
+	// 	writeLine(iptablesData, []string{
+	// 		"-A", KubefayOutputChain,
+	// 		"-m", "comment", "--comment", `"Kubefay: do not track outgoing encapsulation packets"`,
+	// 		"-m", "udp", "-p", "udp", "--dport", strconv.Itoa(udpPort),
+	// 		"-m", "addrtype", "--src-type", "LOCAL",
+	// 		"-j", iptables.ConnTrackTarget, "--notrack",
+	// 	}...)
+	// }
 	writeLine(iptablesData, "COMMIT")
 
 	// Write head lines anyway so the undesired rules can be deleted when noEncap -> encap.
@@ -302,9 +301,7 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 
 	writeLine(iptablesData, "*nat")
 	writeLine(iptablesData, iptables.MakeChainLine(KubefayPostRoutingChain))
-	klog.Info("--out------------------------------- add host iptalb rules")
 	if !c.noSNAT {
-		klog.Info("--------------------------------- add host iptalb rules")
 		writeLine(iptablesData, []string{
 			"-A", KubefayPostRoutingChain,
 			"-m", "comment", "--comment", `"Kubefay: masquerade pod to external packets"`,

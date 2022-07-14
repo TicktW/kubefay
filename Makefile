@@ -109,9 +109,9 @@ bin-ipam-cni:
 
 .PHONY: bin
 bin:
-	@make bin-cni
-	@make bin-ipam-cni
-	@make bin-agent
+	make bin-cni
+	make bin-ipam-cni
+	make bin-agent
 
 .PHONY: clean
 clean:
@@ -128,12 +128,12 @@ manifest-gen:
 	helm template kubefay --set kindCluster.enabled=false  --dry-run ./build/helm/kubefay/ > kubefay.yaml
 
 .PHONY: manifest-apply-kind
-manifest-apply:
+manifest-apply-kind:
 	@echo "===> Generating dev manifest for Antrea <==="
 	helm template kubefay  --dry-run ./build/helm/kubefay/ | kubectl apply -f -
 	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
 
-.PHONY: manifest-apply-kind
+.PHONY: manifest-apply
 manifest-apply:
 	@echo "===> Generating dev manifest for Antrea <==="
 	helm template kubefay --set kindCluster.enabled=false --dry-run ./build/helm/kubefay/ | kubectl apply -f -
@@ -188,7 +188,7 @@ dev-big-round:
 	make build-ubuntu
 	make cluster
 	make cluster-load-image
-	make manifest-apply
+	make manifest-apply-kind
 	make test-app-apply
 	make kube-get-pod
 	make kube-log-pod

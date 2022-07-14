@@ -79,7 +79,7 @@ The agent is the control plane and Open vSwtich is the data plane.
 			if err := validate(&config); err != nil {
 				klog.Fatalf("Error running agent: %v", err)
 			}
-			if err := run(); err != nil {
+			if err := run(&config); err != nil {
 				klog.Fatalf("Error running agent: %v", err)
 			}
 		},
@@ -116,6 +116,7 @@ func validate(config *KubefayConf) error {
 
 func run(config *KubefayConf) error {
 	klog.Infof("kubefay agent (version %s)", version.GetFullVersion())
+	klog.Infof("kubefay config %+v", config)
 	// logs.GlogSetter("5")
 
 	klog.V(1).Infof("kubefay agent 1 (version %s)", version.GetFullVersion())
@@ -124,6 +125,7 @@ func run(config *KubefayConf) error {
 	klog.V(4).Infof("kubefay agent 4 (version %s)", version.GetFullVersion())
 	klog.V(5).Infof("kubefay agent 5 (version %s)", version.GetFullVersion())
 	klog.Info("create k8s clients")
+
 	k8sConfig := componentbaseconfig.ClientConnectionConfiguration{}
 	k8sClient, crdClient, err := k8s.CreateClients(k8sConfig)
 
@@ -142,7 +144,6 @@ func run(config *KubefayConf) error {
 	ovsdbAddress := ovsconfig.GetConnAddress(ovsconfig.DefaultOVSRunDir)
 	ovsdbConnection, err := ovsconfig.NewOVSDBConnectionUDS(ovsdbAddress)
 	if err != nil {
-		// TODO: ovsconfig.NewOVSDBConnectionUDS might return timeout in the future, need to add retry
 		return fmt.Errorf("error connecting OVSDB: %v", err)
 	}
 	defer ovsdbConnection.Close()
@@ -168,7 +169,6 @@ func run(config *KubefayConf) error {
 	// Create an ifaceStore that caches network interfaces managed by this node.
 	ifaceStore := interfacestore.NewInterfaceStore()
 
-	klog.Info("begin agent init...11111")
 	agentInit := agent.NewAgent(
 		k8sClient,
 		ovsBridgeClient,
@@ -199,7 +199,6 @@ func run(config *KubefayConf) error {
 		isChaining,
 		routeClient,
 		networkReadyCh)
-	// TODO datapath type need to be configured
 	// err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, ovsconfig.OVSDatapathNetdev)
 	err = cniServer.Initialize(ovsBridgeClient, ofClient, ifaceStore, config.datapathType)
 	if err != nil {
