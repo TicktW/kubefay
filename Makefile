@@ -223,3 +223,7 @@ minikube-dev-round:
 	make build-ubuntu
 	make minikube-cluster
 	make minikube-img-load
+
+.PHONY: test-e2e
+test-e2e:
+	go clean -testcache && go test ./ci/e2e/ -v
