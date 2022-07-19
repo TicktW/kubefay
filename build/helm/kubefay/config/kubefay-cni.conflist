@@ -1,0 +1,20 @@
+{
+    "cniVersion":"0.3.0",
+    "name": "kubefay",
+    "plugins": [
+        {
+            "type": "kubefay-cni",
+            "ipam": {
+                "type": "kubefay-ipam-cni"
+            }
+        },
+        {
+            "type": "portmap",
+            "capabilities": {"portMappings": true}
+        },
+        {
+            "type": "bandwidth",
+            "capabilities": {"bandwidth": true}
+        }
+    ]
+}

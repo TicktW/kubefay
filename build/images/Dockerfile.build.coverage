@@ -1,0 +1,26 @@
+ARG GO_VERSION
+ARG OVS_VERSION
+FROM golang:${GO_VERSION} as kubefay-build
+
+WORKDIR /kubefay
+
+COPY go.mod /kubefay/go.mod
+
+RUN go mod download
+
+COPY . /kubefay
+
+RUN make kubefay-agent kubefay-controller kubefay-cni antctl-linux kubefay-controller-instr-binary kubefay-agent-instr-binary antctl-instr-binary
+RUN mv bin/antctl-linux bin/antctl
+
+FROM kubefay/base-ubuntu:${OVS_VERSION}
+
+LABEL maintainer="kubefay <projectkubefay-dev@googlegroups.com>"
+LABEL description="The Docker image to deploy the kubefay CNI with code coverage measurement enabled (used for testing)."
+
+USER root
+
+COPY build/images/scripts/* /usr/local/bin/
+COPY --from=kubefay-build /kubefay/bin/* /usr/local/bin/
+COPY --from=kubefay-build /kubefay/test/e2e/coverage/controller-arg-file /
+COPY --from=kubefay-build /kubefay/test/e2e/coverage/agent-arg-file /

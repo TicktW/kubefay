@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Fetching the list of the binaries that user wants to skip installing.
+IFS=',' read -r -a binaries <<< "${SKIP_CNI_BINARIES:-}"
+# Todo: check version and continue installation only for a newer version
+
+# Install kubefay binary file
+install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay
+
+# Checking the condition before installing the binaries, to ensure that user
+# does not want to skip the corressponding CNI binary file
+
+# Install the loopback plugin.
+# It is required by kubelet on Linux when using docker as the container runtime.
+# We replace the binary files even they are already present on the Node to make
+# sure expected versions are used.
+if [[ ! " ${binaries[*]} " =~ " loopback " ]]; then
+  install -m 755 /opt/cni/bin/loopback /host/opt/cni/bin/loopback
+fi
+
+# Install PortMap CNI binary file. It is required to support hostPort.
+if [[ ! " ${binaries[*]} " =~ " portmap " ]]; then
+  install -m 755 /opt/cni/bin/portmap /host/opt/cni/bin/portmap
+fi
+
+# Install bandwidth CNI binary file. It is required to support traffic shaping.
+if [[ ! " ${binaries[*]} " =~ " bandwidth " ]]; then
+  install -m 755 /opt/cni/bin/bandwidth /host/opt/cni/bin/bandwidth
+fi
+
+# Install whereabouts IPAM binary file. Required for global IPAM support specific to CNF use cases.
+# if [[ ! " ${binaries[*]} " =~ " whereabouts " ]]; then
+#   install -m 755 /opt/cni/bin/whereabouts /host/opt/cni/bin/whereabouts
+# fi
+
+# Install kubefay configuration file.
+# Note that it needs to be executed after installing the above binaries because container runtimes such as cri-o may
+# watch the conf directory and try to validate the config and binaries immediately once there is a change.
+
+rm -rf /host/etc/cni/net.d/*.conflist  # clean other cni's config
+install -m 644 /etc/kubefay/kubefay-cni.conflist /host/etc/cni/net.d/10-kubefay.conflist
+
+# If more than one CNI config file exists, the file with the lowest name is
+# chosen i.e. existing 10-kubefay.conf will be chosen over 10-kubefay.conflist.
+# Hence, delete older 10-kubefay.conf file.
+rm -f /host/etc/cni/net.d/10-kubefay.conf
+
+# Load the OVS kernel module
+modprobe openvswitch || (echo "Failed to load the OVS kernel module from the container, try running 'modprobe openvswitch' on your Nodes"; exit 1)
+
+# Load the WireGuard kernel module. This is only required when WireGuard encryption is enabled.
+# We could parse the kubefay config file in the init-container to dynamically load this kernel module in the future.
+# modprobe wireguard || (echo "Failed to load the WireGuard kernel module, WireGuard encryption will not be available")
+
+# Change the default permissions of the run directory.
+chmod 0750 /var/run/kubefay

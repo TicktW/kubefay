@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Todo: check version and continue installation only for a newer version
+
+# Install kubefay configuration file
+install -m 644 /etc/kubefay/kubefay-cni.conflist /host/etc/cni/net.d/10-kubefay.conflist
+
+# Install kubefay binary file
+install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay-cni
+# install -m 755 /usr/local/bin/kubefay-ipam-cni /opt/cni/bin/kubefay-ipam-cni
+install -m 755 /usr/local/bin/kubefay-ipam-cni /host/opt/cni/bin/kubefay-ipam-cni
+
+# Install the loopback plugin.
+# It is required by kubelet on Linux when using docker as the container runtime.
+# We replace the binary files even they are already present on the Node to make
+# sure expected versions are used.
+install -m 755 /opt/cni/bin/loopback /host/opt/cni/bin/loopback
+
+# Install PortMap CNI binary file. It is required to support hostPort.
+install -m 755 /opt/cni/bin/portmap /host/opt/cni/bin/portmap
+
+# Install bandwidth CNI binary file, It is required to support traffic shaping.
+install -m 755 /opt/cni/bin/bandwidth /host/opt/cni/bin/bandwidth

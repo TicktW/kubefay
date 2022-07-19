@@ -1,0 +1,58 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: subnets.kubefay.ticktw.github.com
+spec:
+  group: kubefay.ticktw.github.com
+  names:
+    kind: SubNet
+    listKind: SubNetList
+    plural: subnets
+    singular: subnet
+    shortNames:
+    - sn
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                cidr:
+                  type: string
+                dns:
+                  type: string
+                externalIPs:
+                  type: array
+                  items:
+                    type: string
+                gateway:
+                  type: string
+                ipVersion:
+                  type: string
+                lastReservedIP:
+                  type: string
+                namespaces:
+                  type: array
+                  items:
+                    type: string
+                unusedPool:
+                  type: array
+                  items:
+                    type: string
+                usedPool:
+                  type: object
+                  additionalProperties:
+                    type: string
+            status:
+                type: object
+                properties:
+                    poolStatus:
+                      type: string
+                    ipamEvent:
+                      type: string
