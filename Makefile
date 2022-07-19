@@ -192,6 +192,8 @@ dev-big-round:
 	make test-app-apply
 	make kube-get-pod
 	make kube-log-pod
+	sleep 30
+	make test-e2e
 
 .PHONY: exec-kind-node
 exec-kind-node:
@@ -201,6 +203,10 @@ exec-kind-node:
 test-app-apply:
 	kubectl apply -f examples/app-master.yml
 	kubectl apply -f examples/app-worker.yml
+	kubectl apply -f examples/subnet-new.yml
+	kubectl apply -f examples/ns-new.yml
+	kubectl apply -f examples/app-master-new.yml
+	kubectl apply -f examples/app-worker-new.yml
 
 # ovs-appctl ofproto/trace br-int
 .PHONY: minikube-img-load

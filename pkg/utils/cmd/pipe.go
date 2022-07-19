@@ -79,6 +79,7 @@ func PipeCmd(cmds ...*exec.Cmd) (string, error) {
 }
 
 func PipeCmdStr(cmd string) (string, error) {
+	// fmt.Println(cmd)
 	if strings.Contains(cmd, "awk") {
 		bashCmd := exec.Command("bash", "-c", cmd)
 		out, err := bashCmd.CombinedOutput()
