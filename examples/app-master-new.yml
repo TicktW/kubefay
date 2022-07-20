@@ -20,6 +20,6 @@ spec:
       - name: kubefay
         image: kubefay/kubefay-ubuntu:latest
         imagePullPolicy: Never
-        command: [ "/bin/sh","-c","python3 -m http.server" ]
+        command: [ "kubefay-test-server" ]
         ports:
         - containerPort: 80

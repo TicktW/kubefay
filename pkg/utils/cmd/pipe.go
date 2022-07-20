@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -67,7 +68,6 @@ func PipeCmd(cmds ...*exec.Cmd) (string, error) {
 
 	cur = cmdList.GetHead()
 	for cur != nil {
-		// fmt.Printf("%s\n", cur.cmd.String())
 		err := cur.cmd.Wait()
 		if err != nil {
 			return "", err
@@ -79,7 +79,7 @@ func PipeCmd(cmds ...*exec.Cmd) (string, error) {
 }
 
 func PipeCmdStr(cmd string) (string, error) {
-	// fmt.Println(cmd)
+	fmt.Printf("\n          %s ", cmd)
 	if strings.Contains(cmd, "awk") {
 		bashCmd := exec.Command("bash", "-c", cmd)
 		out, err := bashCmd.CombinedOutput()
@@ -94,11 +94,6 @@ func PipeCmdStr(cmd string) (string, error) {
 		s := strings.Split(strings.Trim(cmdStr, " "), " ")
 		name := s[0]
 		args := s[1:]
-		// if name == "awk" {
-		// 	for idx, arg := range args {
-		// 		args[idx] = strings.Trim(arg, "'")
-		// 	}
-		// }
 		cmds = append(cmds, exec.Command(name, args...))
 	}
 

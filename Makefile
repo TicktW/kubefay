@@ -199,10 +199,7 @@ dev-big-round:
 	make manifest-apply-kind
 	sleep 5
 	make test-app-apply
-	sleep 5
-	make kube-get-pod
-	make kube-log-pod
-	sleep 30
+	sleep 60
 	make test-e2e
 
 .PHONY: exec-kind-node
