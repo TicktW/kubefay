@@ -107,11 +107,18 @@ bin-ipam-cni:
 	# @echo $(IPAMLDFLAGS)
 	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-cni
 
+.PHONY: bin-test
+bin-test:
+	@mkdir -p $(BINDIR)
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-server  github.com/TicktW/kubefay/ci/e2e/kubefay-test-server
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-cli github.com/TicktW/kubefay/ci/e2e/kubefay-test-cli
+
 .PHONY: bin
 bin:
 	make bin-cni
 	make bin-ipam-cni
 	make bin-agent
+	make bin-test
 
 .PHONY: clean
 clean:
@@ -188,11 +195,11 @@ dev-big-round:
 	make build-ubuntu
 	make cluster
 	make cluster-load-image
+	sleep 10
 	make manifest-apply-kind
+	sleep 5
 	make test-app-apply
-	make kube-get-pod
-	make kube-log-pod
-	sleep 30
+	sleep 60
 	make test-e2e
 
 .PHONY: exec-kind-node
