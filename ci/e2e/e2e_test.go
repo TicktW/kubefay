@@ -18,7 +18,8 @@ func TestE2E(t *testing.T) {
 
 		FAY_INTERNET := "qq.com"
 		FAY_MASTER_NODE := "kind-control-plane"
-		FAY_WORKER_NODE := "kind-control-plane"
+		FAY_WORKER_NODE := "kind-worker"
+		GITHUB_ACTION := ""
 
 		if internet := os.Getenv("FAY_INTERNET"); internet != "" {
 			FAY_INTERNET = internet
@@ -28,8 +29,12 @@ func TestE2E(t *testing.T) {
 			FAY_MASTER_NODE = master
 		}
 
-		if master := os.Getenv("FAY_WORKER_NODE"); master != "" {
-			FAY_WORKER_NODE = master
+		if worker := os.Getenv("FAY_WORKER_NODE"); worker != "" {
+			FAY_WORKER_NODE = worker
+		}
+
+		if github := os.Getenv("GITHUB_ACTION"); github != "" {
+			GITHUB_ACTION = github
 		}
 
 		PING_RESULT_OK := "1 packets transmitted, 1 packets received, 0% packet loss"
@@ -87,32 +92,37 @@ func TestE2E(t *testing.T) {
 		})
 
 		Convey("\nLayer 2 network of all kinds of pods should be ready", func() {
-			Convey("All namespace:test pods should ping internet successfully", func() {
 
-				res, err := cmd.PipeCmdStr(`kubectl get pod | grep test | awk '{print $1}' | xargs`)
-				So(err, ShouldBeNil)
+			if GITHUB_ACTION == "" {
 
-				testPods := strings.Split(res, " ")
+				Convey("All namespace:test pods should ping internet successfully", func() {
 
-				for _, testPod := range testPods {
-					kubeCmd := fmt.Sprintf("kubectl exec -it %s -- ping -c1 %s", testPod, FAY_INTERNET)
-					res, err = cmd.PipeCmdStr(kubeCmd)
+					res, err := cmd.PipeCmdStr(`kubectl get pod | grep test | awk '{print $1}' | xargs`)
 					So(err, ShouldBeNil)
-					So(res, ShouldContainSubstring, PING_RESULT_OK)
-				}
 
-				res, err = cmd.PipeCmdStr(`kubectl -n kubefay-test get pod | grep test | awk '{print $1}' | xargs`)
-				So(err, ShouldBeNil)
+					testPods := strings.Split(res, " ")
 
-				testPods = strings.Split(res, " ")
+					for _, testPod := range testPods {
+						kubeCmd := fmt.Sprintf("kubectl exec -it %s -- ping -c1 %s", testPod, FAY_INTERNET)
+						res, err = cmd.PipeCmdStr(kubeCmd)
+						So(err, ShouldBeNil)
+						So(res, ShouldContainSubstring, PING_RESULT_OK)
+					}
 
-				for _, testPod := range testPods {
-					kubeCmd := fmt.Sprintf("kubectl -n kubefay-test exec -it %s -- ping -c1 %s", testPod, FAY_INTERNET)
-					res, err = cmd.PipeCmdStr(kubeCmd)
+					res, err = cmd.PipeCmdStr(`kubectl -n kubefay-test get pod | grep test | awk '{print $1}' | xargs`)
 					So(err, ShouldBeNil)
-					So(res, ShouldContainSubstring, PING_RESULT_OK)
-				}
-			})
+
+					testPods = strings.Split(res, " ")
+
+					for _, testPod := range testPods {
+						kubeCmd := fmt.Sprintf("kubectl -n kubefay-test exec -it %s -- ping -c1 %s", testPod, FAY_INTERNET)
+						res, err = cmd.PipeCmdStr(kubeCmd)
+						So(err, ShouldBeNil)
+						So(res, ShouldContainSubstring, PING_RESULT_OK)
+					}
+				})
+
+			}
 
 			Convey("Test pods on master node should ping the others successfully", func() {
 
