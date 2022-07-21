@@ -14,7 +14,7 @@ func main() {
 	}
 
 	reqAddr := os.Args[1]
-	if !strings.HasPrefix(reqAddr, "http://") {
+	if !strings.HasPrefix(reqAddr, "http") {
 		reqAddr = "http://" + reqAddr
 	}
 

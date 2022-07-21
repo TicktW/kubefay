@@ -1,5 +1,6 @@
 ARG GO_VERSION
 ARG OVS_VERSION
+
 FROM golang:${GO_VERSION} as kubefay-build
 
 WORKDIR /kubefay
@@ -10,6 +11,7 @@ RUN go mod download
 
 COPY . /kubefay
 
+RUN make bin
 # RUN make kubefay-agent kubefay-controller kubefay-cni antctl-linux
 # RUN mv bin/antctl-linux bin/antctl
 

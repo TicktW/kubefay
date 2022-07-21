@@ -1,0 +1,112 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master"]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Kubectl tool installer
+        uses: Azure/setup-kubectl@v3
+
+      # - name: setup minikube cluster
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install -y qemu-system
+      #     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+      #     sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      #     minikube start --driver='qemu2' --container-runtime docker --nodes=2 --kubernetes-version=v1.18.1
+      #     kubectl get no -o wide
+      #     kubectl -n kube-system get po
+
+      - name: install kind 
+        run: |
+          echo 'making kind avaliable'
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64
+          sudo install kind /usr/local/bin/kind
+          # make build-docker-ubuntu
+          # bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+          # source /home/runner/.gvm/scripts/gvm
+          # gvm install go1.18
+          # gvm use go1.18 --default
+          # go version
+          # go mod download
+
+      # - name: prepare docker images
+        # run: |
+        #   echo 'making ovs-ubuntu images'
+        #   make ovs-ubuntu
+        #   echo 'making base-ubuntu images'
+        #   make base-ubuntu
+
+      - name: build project by docker
+        run: make build-docker-ubuntu
+
+      - name: prepare cluster
+        run: |
+          make cluster
+          make cluster-load-image
+          sleep 10
+
+      - name: apply test app
+        run: |
+          make manifest-apply-kind
+          sleep 5
+          make test-app-apply
+          sleep 60
+
+      - name: run end to end test
+        run: GITHUB_ACTION=true make test-e2e
+
+
+      # - name: Cache APT Packages
+      #   uses: awalsh128/cache-apt-pkgs-action@v1.0.3
+      #   with:
+      #     packages: virtualbox
+
+      # - name: setup-minikube
+      #   # You may pin to the exact commit or the version.
+      #   # uses: medyagh/setup-minikube@b127ace2ffdece4eb28e7dedb9da39f495ab7af0
+      #   uses: medyagh/setup-minikube@v0.0.8
+      #   with:
+      #     # Choose a specific version of minikube, "latest" for the latest stable build, or "HEAD" for the latest development build
+      #     # minikube-version: # optional, default is latest
+      #     # Choose a specific driver, one of: docker, none, podman, virtualbox, parallels, vmwarefusion, hyperkit, vmware, ssh
+      #     driver: qemu # optional, default is 
+      #     # Choose a specific container-runtime, one of: docker, containerd, cri-o
+      #     container-runtime: containerd # optional, default is 
+      #     # Choose a specific version of Kubernetes, "stable" for the latest stable build, or "latest" for the latest development build
+      #     kubernetes-version: v1.18.1 # optional, default is 
+      #     # Number of CPUs allocated to Kubernetes. Use "max" to use the maximum number of CPUs.
+      #     # cpus: # optional, default is 
+      #     # Amount of RAM to allocate to Kubernetes (format: <number>[<unit>], where unit = b, k, m or g). Use "max" to use the maximum amount of memory.
+      #     # memory: # optional, default is 
+      #     # CNI plug-in to use. Valid options: auto, bridge, calico, cilium, flannel, kindnet, or path to a CNI manifest
+      #     # cni: # optional, default is auto
+      #       # Runs a single command using the runners shell
+
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.

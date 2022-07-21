@@ -53,6 +53,12 @@ build-push:
 docker-login:
 	echo $CR_PAT | docker login ghcr.io -u kubefay --password-stdin
 
+.PHONY: build-docker-ubuntu
+build-docker-ubuntu:
+	@echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
+	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.build.ubuntu .
+	docker tag kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) kubefay/kubefay-ubuntu:latest
+
 dev-ubuntu:
 	@echo "===> Dev env setup <==="
 	docker build -t kubefay/kubefay-ubuntu-dev:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.dev.ubuntu .
@@ -243,7 +249,7 @@ minikube-img-reload:
 
 .PHONY: minikube-cluster
 minikube-cluster:
-	minikube start --driver kvm2 --registry-mirror=https://registry.docker-cn.com --image-mirror-country cn --extra-config=kubelet.cgroup-driver=systemd --kubernetes-version=v1.18.8 -n 1 --cni=kubefay.yaml
+	minikube start --driver='kvm2' --registry-mirror=https://registry.docker-cn.com --image-mirror-country=cn --extra-config=kubelet.cgroup-driver=systemd --kubernetes-version=v1.18.8 -n 1 --cni=kubefay.yaml
 
 .PHONY: minikube-dev-round
 minikube-dev-round:
