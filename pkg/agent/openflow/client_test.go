@@ -27,11 +27,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
-	oftest "github.com/TicktW/kubefay/pkg/agent/openflow/testing"
-	ofconfig "github.com/TicktW/kubefay/pkg/ovs/openflow"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/openflow/cookie"
+	oftest "github.com/kubefay/kubefay/pkg/agent/openflow/testing"
+	ofconfig "github.com/kubefay/kubefay/pkg/ovs/openflow"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 )
 
 const bridgeName = "dummy-br"

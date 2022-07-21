@@ -27,11 +27,11 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
-	oftest "github.com/TicktW/kubefay/pkg/agent/openflow/testing"
-	routetest "github.com/TicktW/kubefay/pkg/agent/route/testing"
-	ovsconfigtest "github.com/TicktW/kubefay/pkg/ovs/ovsconfig/testing"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/interfacestore"
+	oftest "github.com/kubefay/kubefay/pkg/agent/openflow/testing"
+	routetest "github.com/kubefay/kubefay/pkg/agent/route/testing"
+	ovsconfigtest "github.com/kubefay/kubefay/pkg/ovs/ovsconfig/testing"
 )
 
 var (

@@ -1,7 +1,7 @@
 # Generate clientset and apis code with K8s codegen tools.
 # code generations tools shoule be installed before this script running
 
-PROJECT_PKG="github.com/TicktW/kubefay"
+PROJECT_PKG="github.com/kubefay/kubefay"
 # export to make a env for child processes
 export GOPATH=$(go env GOPATH)
 

@@ -18,8 +18,8 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 )
 
 const (

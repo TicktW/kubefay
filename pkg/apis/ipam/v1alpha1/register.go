@@ -1,4 +1,4 @@
-// MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
+// MIT License Copyright (C) 2022 kubefay@https://github.com/kubefay/kubefay
 package v1alpha1
 
 import (
@@ -8,7 +8,7 @@ import (
 )
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = schema.GroupVersion{Group: "kubefay.ticktw.github.com", Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: "kubefay.kubefay.github.com", Version: "v1alpha1"}
 
 // Kind takes an unqualified kind and returns back a Group qualified GroupKind
 func Kind(kind string) schema.GroupKind {

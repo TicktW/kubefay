@@ -1,6 +1,6 @@
 # Kubefay
 
-[![license](https://img.shields.io/github/license/TicktW/kubefay)](LICENSE)
+[![license](https://img.shields.io/github/license/kubefay/kubefay)](LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 Virtual network solution for K8s based on OVS.
@@ -59,4 +59,4 @@ Small note: If editing the Readme, please conform to the [standard-readme](https
 
 ## License
 
-[MIT © TicktW](./LICENSE)
+[MIT © kubefay](./LICENSE)

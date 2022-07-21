@@ -33,17 +33,17 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/cniserver/ipam"
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
-	"github.com/TicktW/kubefay/pkg/agent/openflow"
-	"github.com/TicktW/kubefay/pkg/agent/route"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
+	"github.com/kubefay/kubefay/pkg/agent/cniserver/ipam"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/interfacestore"
+	"github.com/kubefay/kubefay/pkg/agent/openflow"
+	"github.com/kubefay/kubefay/pkg/agent/route"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	cnipb "github.com/kubefay/kubefay/pkg/rpc/cni/v1beta1"
 
-	// "github.com/TicktW/kubefay/pkg/apis/controlplane/v1beta2"
-	"github.com/TicktW/kubefay/pkg/cni"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	// "github.com/kubefay/kubefay/pkg/apis/controlplane/v1beta2"
+	"github.com/kubefay/kubefay/pkg/cni"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 )
 
 const (

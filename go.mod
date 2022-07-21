@@ -1,4 +1,4 @@
-module github.com/TicktW/kubefay
+module github.com/kubefay/kubefay
 
 go 1.18
 

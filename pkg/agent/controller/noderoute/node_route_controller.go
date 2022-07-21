@@ -31,13 +31,14 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
-	"github.com/TicktW/kubefay/pkg/agent/openflow"
-	"github.com/TicktW/kubefay/pkg/agent/route"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	// "github.com/TicktW/kubefay/pkg/features"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/interfacestore"
+	"github.com/kubefay/kubefay/pkg/agent/openflow"
+	"github.com/kubefay/kubefay/pkg/agent/route"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+
+	// "github.com/kubefay/kubefay/pkg/features"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 )
 
 const (

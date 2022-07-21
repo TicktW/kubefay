@@ -21,7 +21,7 @@ package testing
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	ovsconfig "github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	ovsconfig "github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 	reflect "reflect"
 )
 

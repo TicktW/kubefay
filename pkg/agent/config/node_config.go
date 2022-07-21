@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
 )
 
 const (

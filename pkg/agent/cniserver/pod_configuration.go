@@ -27,12 +27,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
-	"github.com/TicktW/kubefay/pkg/agent/openflow"
-	"github.com/TicktW/kubefay/pkg/agent/route"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/utils/k8s"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/agent/interfacestore"
+	"github.com/kubefay/kubefay/pkg/agent/openflow"
+	"github.com/kubefay/kubefay/pkg/agent/route"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/utils/k8s"
 )
 
 type vethPair struct {

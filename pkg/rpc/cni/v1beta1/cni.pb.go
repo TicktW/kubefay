@@ -262,7 +262,7 @@ type Error struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Code    ErrorCode   `protobuf:"varint,1,opt,name=code,proto3,enum=github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.ErrorCode" json:"code,omitempty"`
+	Code    ErrorCode   `protobuf:"varint,1,opt,name=code,proto3,enum=github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.ErrorCode" json:"code,omitempty"`
 	Message string      `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	Details []*any1.Any `protobuf:"bytes,3,rep,name=details,proto3" json:"details,omitempty"`
 }
@@ -489,24 +489,24 @@ func file_pkg_rpc_cni_v1beta1_cni_proto_rawDescGZIP() []byte {
 var file_pkg_rpc_cni_v1beta1_cni_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_pkg_rpc_cni_v1beta1_cni_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_pkg_rpc_cni_v1beta1_cni_proto_goTypes = []interface{}{
-	(ErrorCode)(0),         // 0: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.ErrorCode
-	(*CniCmdArgs)(nil),     // 1: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdArgs
-	(*CniCmdRequest)(nil),  // 2: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
-	(*Error)(nil),          // 3: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Error
-	(*CniCmdResponse)(nil), // 4: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
+	(ErrorCode)(0),         // 0: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.ErrorCode
+	(*CniCmdArgs)(nil),     // 1: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdArgs
+	(*CniCmdRequest)(nil),  // 2: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
+	(*Error)(nil),          // 3: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Error
+	(*CniCmdResponse)(nil), // 4: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
 	(*any1.Any)(nil),       // 5: google.protobuf.Any
 }
 var file_pkg_rpc_cni_v1beta1_cni_proto_depIdxs = []int32{
-	1, // 0: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest.cni_args:type_name -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdArgs
-	0, // 1: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Error.code:type_name -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.ErrorCode
-	5, // 2: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Error.details:type_name -> google.protobuf.Any
-	3, // 3: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse.error:type_name -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Error
-	2, // 4: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdAdd:input_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
-	2, // 5: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdCheck:input_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
-	2, // 6: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdDel:input_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
-	4, // 7: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdAdd:output_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
-	4, // 8: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdCheck:output_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
-	4, // 9: github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdDel:output_type -> github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
+	1, // 0: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest.cni_args:type_name -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdArgs
+	0, // 1: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Error.code:type_name -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.ErrorCode
+	5, // 2: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Error.details:type_name -> google.protobuf.Any
+	3, // 3: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse.error:type_name -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Error
+	2, // 4: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdAdd:input_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
+	2, // 5: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdCheck:input_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
+	2, // 6: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdDel:input_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdRequest
+	4, // 7: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdAdd:output_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
+	4, // 8: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdCheck:output_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
+	4, // 9: github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni.CmdDel:output_type -> github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.CniCmdResponse
 	7, // [7:10] is the sub-list for method output_type
 	4, // [4:7] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
@@ -617,7 +617,7 @@ func NewCniClient(cc grpc.ClientConnInterface) CniClient {
 
 func (c *cniClient) CmdAdd(ctx context.Context, in *CniCmdRequest, opts ...grpc.CallOption) (*CniCmdResponse, error) {
 	out := new(CniCmdResponse)
-	err := c.cc.Invoke(ctx, "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdAdd", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdAdd", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +626,7 @@ func (c *cniClient) CmdAdd(ctx context.Context, in *CniCmdRequest, opts ...grpc.
 
 func (c *cniClient) CmdCheck(ctx context.Context, in *CniCmdRequest, opts ...grpc.CallOption) (*CniCmdResponse, error) {
 	out := new(CniCmdResponse)
-	err := c.cc.Invoke(ctx, "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdCheck", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdCheck", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -635,7 +635,7 @@ func (c *cniClient) CmdCheck(ctx context.Context, in *CniCmdRequest, opts ...grp
 
 func (c *cniClient) CmdDel(ctx context.Context, in *CniCmdRequest, opts ...grpc.CallOption) (*CniCmdResponse, error) {
 	out := new(CniCmdResponse)
-	err := c.cc.Invoke(ctx, "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdDel", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdDel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -677,7 +677,7 @@ func _Cni_CmdAdd_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdAdd",
+		FullMethod: "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdAdd",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CniServer).CmdAdd(ctx, req.(*CniCmdRequest))
@@ -695,7 +695,7 @@ func _Cni_CmdCheck_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdCheck",
+		FullMethod: "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdCheck",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CniServer).CmdCheck(ctx, req.(*CniCmdRequest))
@@ -713,7 +713,7 @@ func _Cni_CmdDel_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdDel",
+		FullMethod: "/github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni/CmdDel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CniServer).CmdDel(ctx, req.(*CniCmdRequest))
@@ -722,7 +722,7 @@ func _Cni_CmdDel_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 var _Cni_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "github.com.TicktW.kubefay.pkg.rpc.cni.v1beta1.Cni",
+	ServiceName: "github.com.kubefay.kubefay.pkg.rpc.cni.v1beta1.Cni",
 	HandlerType: (*CniServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

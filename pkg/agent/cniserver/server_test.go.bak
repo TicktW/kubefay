@@ -34,17 +34,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/TicktW/kubefay/pkg/agent/cniserver/ipam"
-	ipamtest "github.com/TicktW/kubefay/pkg/agent/cniserver/ipam/testing"
-	cniservertest "github.com/TicktW/kubefay/pkg/agent/cniserver/testing"
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/interfacestore"
-	openflowtest "github.com/TicktW/kubefay/pkg/agent/openflow/testing"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
-	"github.com/TicktW/kubefay/pkg/cni"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
-	ovsconfigtest "github.com/TicktW/kubefay/pkg/ovs/ovsconfig/testing"
+	"github.com/kubefay/kubefay/pkg/agent/cniserver/ipam"
+	ipamtest "github.com/kubefay/kubefay/pkg/agent/cniserver/ipam/testing"
+	cniservertest "github.com/kubefay/kubefay/pkg/agent/cniserver/testing"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/interfacestore"
+	openflowtest "github.com/kubefay/kubefay/pkg/agent/openflow/testing"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	cnipb "github.com/kubefay/kubefay/pkg/rpc/cni/v1beta1"
+	"github.com/kubefay/kubefay/pkg/cni"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
+	ovsconfigtest "github.com/kubefay/kubefay/pkg/ovs/ovsconfig/testing"
 )
 
 const (

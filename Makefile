@@ -19,7 +19,7 @@ DOCKER_BUILD_ARGS += --build-arg GO_VERSION=$(GO_VERSION)
 include version.mk
 LDFLAGS += $(VERSION_LDFLAGS)
 IPAMLDFLAGS += $(VERSION_LDFLAGS)
-# IPAMLDFLAGS += -X github.com/TicktW/kubefay/pkg/cni.IPAMBuild=true
+# IPAMLDFLAGS += -X github.com/kubefay/kubefay/pkg/cni.IPAMBuild=true
 
 .PHONY: all
 all: build
@@ -87,31 +87,31 @@ dev-test:
 
 .PHONY: run-dev-docker
 run-dev-docker:
-	# @docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash
-	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/TicktW/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu:latest bash
+	# @docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/kubefay/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu-dev:latest bash
+	@docker run --rm --privileged -v ${PWD}:/root/go/src/github.com/kubefay/kubefay -v /dev/net/tun:/dev/net/tun -it kubefay/kubefay-ubuntu:latest bash
 
 .PHONY: bin-agent
 bin-agent:
 	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-agent $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-agent
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-agent $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/kubefay/kubefay/cmd/kubefay-agent
 
 .PHONY: bin-cni
 bin-cni:
 	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-cni $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-cni
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-cni $(GOFLAGS) -ldflags '$(LDFLAGS)' github.com/kubefay/kubefay/cmd/kubefay-cni
 
 .PHONY: bin-ipam-cni
 bin-ipam-cni:
 	@mkdir -p $(BINDIR)
-	# IPAMLDFLAGS := $(LDFLAGS) + -X github.com/TicktW/kubefay/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
+	# IPAMLDFLAGS := $(LDFLAGS) + -X github.com/kubefay/kubefay/pkg/cni.AntreaCNISocketAddr=/var/run/antrea/cni.sock.ipam
 	# @echo $(IPAMLDFLAGS)
-	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/TicktW/kubefay/cmd/kubefay-cni
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-ipam-cni $(GOFLAGS) -ldflags '$(IPAMLDFLAGS)' github.com/kubefay/kubefay/cmd/kubefay-cni
 
 .PHONY: bin-test
 bin-test:
 	@mkdir -p $(BINDIR)
-	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-server  github.com/TicktW/kubefay/ci/e2e/kubefay-test-server
-	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-cli github.com/TicktW/kubefay/ci/e2e/kubefay-test-cli
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-server  github.com/kubefay/kubefay/ci/e2e/kubefay-test-server
+	GOOS=linux $(GO) build -o $(BINDIR)/kubefay-test-cli github.com/kubefay/kubefay/ci/e2e/kubefay-test-cli
 
 .PHONY: bin
 bin:
@@ -214,6 +214,8 @@ test-app-apply:
 	kubectl apply -f examples/ns-new.yml
 	kubectl apply -f examples/app-master-new.yml
 	kubectl apply -f examples/app-worker-new.yml
+	kubectl apply -f examples/svc-master.yml
+	kubectl apply -f examples/static.yml
 
 # ovs-appctl ofproto/trace br-int
 .PHONY: minikube-img-load

@@ -22,12 +22,12 @@ import (
 	"antrea.io/ofnet/ofctrl"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
-	"github.com/TicktW/kubefay/pkg/agent/types"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	binding "github.com/TicktW/kubefay/pkg/ovs/openflow"
-	// "github.com/TicktW/kubefay/third_party/proxy"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/openflow/cookie"
+	"github.com/kubefay/kubefay/pkg/agent/types"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	binding "github.com/kubefay/kubefay/pkg/ovs/openflow"
+	// "github.com/kubefay/kubefay/third_party/proxy"
 )
 
 const maxRetryForOFSwitch = 5

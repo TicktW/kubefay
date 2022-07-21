@@ -21,7 +21,7 @@ import (
 	"github.com/containernetworking/cni/pkg/invoke"
 	"github.com/containernetworking/cni/pkg/types/current"
 
-	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
+	cnipb "github.com/kubefay/kubefay/pkg/rpc/cni/v1beta1"
 )
 
 var ipamDrivers map[string]IPAMDriver

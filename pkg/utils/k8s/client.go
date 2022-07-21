@@ -1,6 +1,6 @@
 /*
- * @Author: TicktW wxjpython@gmail.com
- * @Description: MIT License Copyright (C) 2022 TicktW@https://github.com/TicktW/kubefay
+ * @Author: kubefay wxjpython@gmail.com
+ * @Description: MIT License Copyright (C) 2022 kubefay@https://github.com/kubefay/kubefay
  */
 package k8s
 
@@ -11,7 +11,7 @@ import (
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/klog/v2"
 
-	crdclientset "github.com/TicktW/kubefay/pkg/client/clientset/versioned"
+	crdclientset "github.com/kubefay/kubefay/pkg/client/clientset/versioned"
 )
 
 // CreateClients creates kube clients from the given config.

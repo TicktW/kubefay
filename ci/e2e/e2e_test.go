@@ -9,7 +9,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/TicktW/kubefay/pkg/utils/cmd"
+	"github.com/kubefay/kubefay/pkg/utils/cmd"
 )
 
 func TestE2E(t *testing.T) {

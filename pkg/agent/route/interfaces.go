@@ -17,7 +17,7 @@ package route
 import (
 	"net"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/config"
 )
 
 // Interface is the interface for routing container packets in host network.
