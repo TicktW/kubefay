@@ -7,7 +7,7 @@ IFS=',' read -r -a binaries <<< "${SKIP_CNI_BINARIES:-}"
 # Todo: check version and continue installation only for a newer version
 
 # Install kubefay binary file
-install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay
+install -m 755 /usr/local/bin/kubefay-cni /host/opt/cni/bin/kubefay-cni
 
 # Checking the condition before installing the binaries, to ensure that user
 # does not want to skip the corressponding CNI binary file
