@@ -42,6 +42,16 @@ build-ubuntu:
 	@echo "===> Building kubefay bins and kubefay/kubefay-ubuntu Docker image <==="
 	docker build -t kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) $(DOCKER_BUILD_ARGS) -f build/images/Dockerfile.ubuntu .
 	docker tag kubefay/kubefay-ubuntu:$(DOCKER_IMG_VERSION) kubefay/kubefay-ubuntu:latest
+	docker tag kubefay/kubefay-ubuntu:latest ghcr.io/kubefay/kubefay-ubuntu:latest
+
+.PHONY: build-push
+build-push:
+	@echo "===> Pushing kubefay  ghcr.io/kubefay/kubefay-ubuntu:latest Docker image <==="
+	docker push ghcr.io/kubefay/kubefay-ubuntu:latest
+
+.PHONY: docker-login
+docker-login:
+	echo $CR_PAT | docker login ghcr.io -u kubefay --password-stdin
 
 dev-ubuntu:
 	@echo "===> Dev env setup <==="
@@ -127,22 +137,22 @@ clean:
 .PHONY: manifest-gen-kind
 manifest-gen-kind:
 	@echo "Generating dev manifest for Kubefay"
-	helm template kubefay  --dry-run ./build/helm/kubefay/
+	helm template kubefay --set kindCluster.enabled=true --set image.pullPolicy=Never --dry-run ./build/helm/kubefay/
 
 .PHONY: manifest-gen
 manifest-gen:
 	@echo "Generating dev manifest for Kubefay"
-	helm template kubefay --set kindCluster.enabled=false  --dry-run ./build/helm/kubefay/ > kubefay.yaml
+	helm template kubefay   --dry-run ./build/helm/kubefay/ > kubefay.yaml
 
 .PHONY: manifest-apply-kind
 manifest-apply-kind:
-	@echo "===> Generating dev manifest for Antrea <==="
-	helm template kubefay  --dry-run ./build/helm/kubefay/ | kubectl apply -f -
+	@echo "===> Generating dev manifest for kubefay <==="
+	helm template kubefay --set kindCluster.enabled=true --set image.pullPolicy=Never --dry-run ./build/helm/kubefay/ | kubectl apply -f -
 	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
 
 .PHONY: manifest-apply
 manifest-apply:
-	@echo "===> Generating dev manifest for Antrea <==="
+	@echo "===> Generating dev manifest for kubefay <==="
 	helm template kubefay --set kindCluster.enabled=false --dry-run ./build/helm/kubefay/ | kubectl apply -f -
 	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
 
@@ -178,6 +188,10 @@ kube-exec-worker-openflow:
 .PHONY: kube-exec-master-openflow
 kube-exec-master-openflow:
 	kubectl -n kube-system exec -it  $$(kubectl -n kube-system get po -o wide | grep kubefay-agent | grep kind-control-plane | awk '{print $$1}') --container kubefay-ovs -- ovs-ofctl dump-flows br-int
+
+.PHONY: kube-describe-agent
+kube-describe-agent:
+	kubectl -n kube-system get pod | grep kubefay-agent | awk '{print $1}' | xargs | kubectl -n kube-system describe pod
 
 # ks exec -it kubefay-agent-cpvwj --container kubefay-ovs -- bash
 .PHONY: dev-small-round
@@ -242,3 +256,10 @@ minikube-dev-round:
 .PHONY: test-e2e
 test-e2e:
 	go clean -testcache && go test ./ci/e2e/ -v
+
+.PHONY: try-with-kind
+try-with-kind:
+	make cluster
+	sleep 10
+	helm template kubefay --set kindCluster.enabled=true --dry-run ./build/helm/kubefay/ | kubectl apply -f -
+	kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml

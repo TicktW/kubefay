@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: kubefay/kubefay-ubuntu
-  pullPolicy: Never
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
 
@@ -86,7 +86,7 @@ affinity: {}
 agentCommand: install-cni
 
 kindCluster:
-  enabled: true
+  enabled: false
 
 podProbe: false
 
