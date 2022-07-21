@@ -28,12 +28,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/agent/util/ipset"
-	"github.com/TicktW/kubefay/pkg/agent/util/iptables"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
-	"github.com/TicktW/kubefay/pkg/utils/env"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	"github.com/kubefay/kubefay/pkg/agent/util/ipset"
+	"github.com/kubefay/kubefay/pkg/agent/util/iptables"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/utils/env"
 )
 
 const (
@@ -162,7 +162,7 @@ func getIPSetName(ip net.IP) string {
 // writeEKSMangleRule writes an additional iptables mangle rule to the
 // iptablesData buffer, which is required to ensure that the reverse path for
 // NodePort Service traffic is correct on EKS.
-// See https://github.com/TicktW/kubefay/issues/678.
+// See https://github.com/kubefay/kubefay/issues/678.
 func (c *Client) writeEKSMangleRule(iptablesData *bytes.Buffer) {
 	// TODO: the following should be taking into account:
 	//   1) AWS_VPC_CNI_NODE_PORT_SUPPORT may be set to false (by default is
@@ -277,7 +277,7 @@ func (c *Client) restoreIptablesData(podCIDR *net.IPNet, podIPSet string) *bytes
 	writeLine(iptablesData, iptables.MakeChainLine(KubefayMangleChain))
 	hostGateway := c.nodeConfig.GatewayConfig.Name
 	// When Kubefay is used to enforce NetworkPolicies in EKS, an additional iptables
-	// mangle rule is required. See https://github.com/TicktW/kubefay/issues/678.
+	// mangle rule is required. See https://github.com/kubefay/kubefay/issues/678.
 	if env.IsCloudEKS() {
 		c.writeEKSMangleRule(iptablesData)
 	}

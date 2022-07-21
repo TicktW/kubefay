@@ -1,4 +1,4 @@
-apiVersion: kubefay.ticktw.github.com/v1alpha1
+apiVersion: kubefay.kubefay.github.com/v1alpha1
 kind: SubNet
 metadata:
   name: defaultnet

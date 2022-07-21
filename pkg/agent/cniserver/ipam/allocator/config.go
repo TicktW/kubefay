@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/TicktW/kubefay/pkg/apis/ipam/v1alpha1"
 	"github.com/containernetworking/cni/pkg/types"
 	types020 "github.com/containernetworking/cni/pkg/types/020"
+	"github.com/kubefay/kubefay/pkg/apis/ipam/v1alpha1"
 )
 
 // The top-level network config - IPAM plugins are passed the full configuration

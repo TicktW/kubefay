@@ -19,9 +19,9 @@ import (
 
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/TicktW/kubefay/pkg/agent/metrics"
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/utils/k8s"
+	"github.com/kubefay/kubefay/pkg/agent/metrics"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	"github.com/kubefay/kubefay/pkg/utils/k8s"
 )
 
 const (
@@ -193,7 +193,7 @@ func (c *interfaceCache) GetContainerInterface(containerID string) (*InterfaceCo
 // GetContainerInterfacesByPod retrieves InterfaceConfigs for the Pod.
 // It's possible that more than one container interface (with different containerIDs) has the same Pod namespace and
 // name temporarily when the previous Pod is being deleted and the new Pod is being created almost simultaneously.
-// https://github.com/TicktW/kubefay/issues/785#issuecomment-642051884
+// https://github.com/kubefay/kubefay/issues/785#issuecomment-642051884
 func (c *interfaceCache) GetContainerInterfacesByPod(podName string, podNamespace string) []*InterfaceConfig {
 	c.RLock()
 	defer c.RUnlock()

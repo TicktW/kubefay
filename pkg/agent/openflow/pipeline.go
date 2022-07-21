@@ -25,12 +25,12 @@ import (
 	"k8s.io/klog/v2"
 
 	// "antrea.io/antrea/pkg/agent/metrics"
-	"github.com/TicktW/kubefay/pkg/agent/config"
-	"github.com/TicktW/kubefay/pkg/agent/openflow/cookie"
-	"github.com/TicktW/kubefay/pkg/agent/types"
-	binding "github.com/TicktW/kubefay/pkg/ovs/openflow"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsctl"
-	// "github.com/TicktW/kubefay/third_party/proxy"
+	"github.com/kubefay/kubefay/pkg/agent/config"
+	"github.com/kubefay/kubefay/pkg/agent/openflow/cookie"
+	"github.com/kubefay/kubefay/pkg/agent/types"
+	binding "github.com/kubefay/kubefay/pkg/ovs/openflow"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsctl"
+	// "github.com/kubefay/kubefay/third_party/proxy"
 )
 
 const (

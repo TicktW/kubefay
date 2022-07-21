@@ -22,7 +22,7 @@ package testing
 import (
 	ofctrl "antrea.io/ofnet/ofctrl"
 	gomock "github.com/golang/mock/gomock"
-	openflow "github.com/TicktW/kubefay/pkg/ovs/openflow"
+	openflow "github.com/kubefay/kubefay/pkg/ovs/openflow"
 	net "net"
 	reflect "reflect"
 )

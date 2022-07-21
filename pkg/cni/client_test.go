@@ -29,7 +29,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
+	cnipb "github.com/kubefay/kubefay/pkg/rpc/cni/v1beta1"
 )
 
 type testClient struct {

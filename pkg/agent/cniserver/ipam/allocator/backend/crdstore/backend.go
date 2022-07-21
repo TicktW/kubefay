@@ -14,10 +14,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TicktW/kubefay/pkg/apis/ipam/v1alpha1"
-	crdclients "github.com/TicktW/kubefay/pkg/client/clientset/versioned"
-	crdlister "github.com/TicktW/kubefay/pkg/client/listers/ipam/v1alpha1"
 	"github.com/containernetworking/plugins/plugins/ipam/host-local/backend"
+	"github.com/kubefay/kubefay/pkg/apis/ipam/v1alpha1"
+	crdclients "github.com/kubefay/kubefay/pkg/client/clientset/versioned"
+	crdlister "github.com/kubefay/kubefay/pkg/client/listers/ipam/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"

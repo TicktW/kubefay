@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ofconfig "github.com/TicktW/kubefay/pkg/ovs/openflow"
+	ofconfig "github.com/kubefay/kubefay/pkg/ovs/openflow"
 )
 
 const (

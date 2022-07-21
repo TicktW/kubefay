@@ -20,8 +20,8 @@ import (
 	"github.com/containernetworking/cni/pkg/skel"
 	cniversion "github.com/containernetworking/cni/pkg/version"
 
-	"github.com/TicktW/kubefay/pkg/cni"
-	"github.com/TicktW/kubefay/pkg/version"
+	"github.com/kubefay/kubefay/pkg/cni"
+	"github.com/kubefay/kubefay/pkg/version"
 )
 
 func main() {

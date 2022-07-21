@@ -7,9 +7,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/TicktW/kubefay/pkg/agent/cniserver/ipam/allocator/backend"
 	"github.com/containernetworking/cni/pkg/types/current"
 	"github.com/containernetworking/plugins/pkg/ip"
+	"github.com/kubefay/kubefay/pkg/agent/cniserver/ipam/allocator/backend"
 )
 
 // IPAllocator reponse for allocating a IP for Pod

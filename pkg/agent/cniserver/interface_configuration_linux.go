@@ -31,11 +31,11 @@ import (
 	"github.com/vishvananda/netlink"
 	"k8s.io/klog/v2"
 
-	"github.com/TicktW/kubefay/pkg/agent/util"
-	"github.com/TicktW/kubefay/pkg/agent/util/arping"
-	"github.com/TicktW/kubefay/pkg/agent/util/ethtool"
-	cnipb "github.com/TicktW/kubefay/pkg/rpc/cni/v1beta1"
-	"github.com/TicktW/kubefay/pkg/ovs/ovsconfig"
+	"github.com/kubefay/kubefay/pkg/agent/util"
+	"github.com/kubefay/kubefay/pkg/agent/util/arping"
+	"github.com/kubefay/kubefay/pkg/agent/util/ethtool"
+	"github.com/kubefay/kubefay/pkg/ovs/ovsconfig"
+	cnipb "github.com/kubefay/kubefay/pkg/rpc/cni/v1beta1"
 )
 
 // NetDeviceType type Enum
