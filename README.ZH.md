@@ -35,7 +35,7 @@ kubefay力求在两者之间寻找平衡点，既有Antrea的性能，也具备K
 
 ### 初步了解kubefay网络
 <div align="center">
-<img src="./doc/imgs/logical-network.png" width="30%">
+<img src="./doc/imgs/logical-network.png" width="40%">
 </div>
 
 如上图所示，kubefay中Subnet可以关联一个或者多个Namespace，同一Subnet下的Namespace中的Pod处于同一局域网落下（二层可达）。不同Subnet通过逻辑路由器转发路由形成k8s的内部网络。k8s的内部网络亦通过逻辑路由与外部网络连接。
@@ -124,13 +124,13 @@ spec:
 
 ### kubefay网络设备
 <div align="center">
-<img src="./doc/imgs/pod-interface.png" width="30%">
+<img src="./doc/imgs/pod-interface.png" width="40%">
 </div>
 
 如上图，kubefay中每个Node上存在一个OVS虚拟交换机br-int，Pod通过veth pair设备连接至br-int。gw0接口是所有子网公用的网关接口，配置所有子网的网关IP地址。tun0接口用于封装不同Node间Pod通信的Overlay网络流量。
 ### kubefay节点内流量
 <div align="center">
-<img src="./doc/imgs/flow-intra-node.png" width="30%">
+<img src="./doc/imgs/flow-intra-node.png" width="40%">
 </div>
 
 如图，同一节点内网络流量有三类：
