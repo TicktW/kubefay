@@ -1,10 +1,10 @@
-# Kubefay
+# kubefay
 
 [![license](https://img.shields.io/github/license/kubefay/kubefay)](LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![CI](https://github.com/kubefay/kubefay/actions/workflows/main.yml/badge.svg)](https://github.com/kubefay/kubefay/actions/workflows/main.yml)
 
-Virtual network solution for K8s based on OVS.
+Kubernets环境下的基于OVS的半虚拟网络解决方案。
 
 ## 目录
 
@@ -15,7 +15,7 @@ Virtual network solution for K8s based on OVS.
 - [开源许可](#开源许可)
 
 ## 简介
-kubefay是[kubernetes/k8s](https://kubernetes.io/docs/home/)下的网络解决方案。[CNI](https://github.com/containernetworking/cni)是容器编排系统(包括k8s)使用的同意的容器网络配置接口。kubefay基于[Open vSwitch/OVS](https://www.openvswitch.org/)为k8s提供半虚拟化网络。
+kubefay是[kubernetes/k8s](https://kubernetes.io/docs/home/)下的网络解决方案。[CNI](https://github.com/containernetworking/cni)是容器编排系统(包括k8s)使用的统一容器网络配置接口。kubefay基于[Open vSwitch/OVS](https://www.openvswitch.org/)为k8s提供半虚拟化网络。
 
 ### kubefay功能
 - 以命名空间隔离的子网方案
@@ -27,7 +27,7 @@ kubefay是[kubernetes/k8s](https://kubernetes.io/docs/home/)下的网络解决�
 ### 与其他CNI相比
 基于OVS的常用CNI网络插件包括Kube-OVN和Antrea.
 
-Kube-OVN是灵雀云开源的网络插件。该插件具有命名空间隔离的子网管理机制，功能强大。由于引入了完整的SDN控制器OVN，Kube-OVN的性能相对较弱，网络流表复杂，运维困难。
+Kube-OVN是灵雀云开源的网络插件。该插件具有命名空间隔离的子网管理机制，功能强大。由于引入了完整的SDN控制器OVN，Kube-OVN的性能相对较弱，网络流表复杂，网络运维困难。
 
 Antrea由VMware研发并开源，性能较好，但功能相对单一。采用OVS自建流表的方式构建，网络诊断相对便捷。
 
@@ -35,7 +35,7 @@ kubefay力求在两者之间寻找平衡点，既有Antrea的性能，也具备K
 
 ### 初步了解kubefay网络
 <div align="center">
-<img src="./doc/imgs/logical-network.png" width="60%">
+<img src="./doc/imgs/logical-network.png" width="30%">
 </div>
 
 如上图所示，kubefay中Subnet可以关联一个或者多个Namespace，同一Subnet下的Namespace中的Pod处于同一局域网落下（二层可达）。不同Subnet通过逻辑路由器转发路由形成k8s的内部网络。k8s的内部网络亦通过逻辑路由与外部网络连接。
@@ -50,7 +50,7 @@ kubectl apply -f ./build/helm/kubefay/defaultnet/subnet.yaml
 ```
 ## 使用
 ### 默认子网络
-Kubefay安装后默认激活一个默认子网defautlnet，该子网配置如下：
+Kubefay安装后默认配置一个默认子网defautlnet，该子网配置如下：
 ```
 apiVersion: kubefay.kubefay.github.com/v1alpha1
 kind: SubNet
@@ -64,6 +64,7 @@ spec:
 
 ### 新建子网络
 除默认子网外，用户可新建设自定义子网络。
+
 1 新建子网资源。举个栗子，下边的配置可生成名为newnet的子网，子网IP地址池为10.182.0.0/16。
 ```
 apiVersion: kubefay.kubefay.github.com/v1alpha1
@@ -123,13 +124,13 @@ spec:
 
 ### kubefay网络设备
 <div align="center">
-<img src="./doc/imgs/pod-interface.png" width="50%">
+<img src="./doc/imgs/pod-interface.png" width="30%">
 </div>
 
 如上图，kubefay中每个Node上存在一个OVS虚拟交换机br-int，Pod通过veth pair设备连接至br-int。gw0接口是所有子网公用的网关接口，配置所有子网的网关IP地址。tun0接口用于封装不同Node间Pod通信的Overlay网络流量。
 ### kubefay节点内流量
 <div align="center">
-<img src="./doc/imgs/flow-intra-node.png" width="50%">
+<img src="./doc/imgs/flow-intra-node.png" width="30%">
 </div>
 
 如图，同一节点内网络流量有三类：
@@ -141,7 +142,7 @@ spec:
 <div align="center">
 <!-- 
 ![节点间流量](./doc/imgs/flow-inter-node.png#w80) -->
-<img src="./doc/imgs/flow-inter-node.png" width="80%">
+<img src="./doc/imgs/flow-inter-node.png" width="60%">
 
 </div>
 不同节点间的Pod流量有两种：
@@ -164,6 +165,4 @@ spec:
 8. 并入master分支
 
 ## 开源许可
-[MIT © kubefay](./LICENSE) 
-
-[Apache 2 - 部分Antrea代码](https://github.com/antrea-io/antrea/blob/main/LICENSE)
+[Apache 2 © kubefay](./LICENSE) 
