@@ -35,10 +35,9 @@ kubefay力求在两者之间寻找平衡点，既有Antrea的性能，也具备K
 
 ### 初步了解kubefay网络
 <div align="center">
-
-![逻辑网络](./doc/imgs/logical-network.png#w60)
-
+<img src="./doc/imgs/logical-network.png" width="60%">
 </div>
+
 如上图所示，kubefay中Subnet可以关联一个或者多个Namespace，同一Subnet下的Namespace中的Pod处于同一局域网落下（二层可达）。不同Subnet通过逻辑路由器转发路由形成k8s的内部网络。k8s的内部网络亦通过逻辑路由与外部网络连接。
 
 ## 安装
@@ -124,18 +123,14 @@ spec:
 
 ### kubefay网络设备
 <div align="center">
-
-![网络设备介绍](./doc/imgs/pod-interface.png#w50)
-
+<img src="./doc/imgs/pod-interface.png" width="50%">
 </div>
+
 如上图，kubefay中每个Node上存在一个OVS虚拟交换机br-int，Pod通过veth pair设备连接至br-int。gw0接口是所有子网公用的网关接口，配置所有子网的网关IP地址。tun0接口用于封装不同Node间Pod通信的Overlay网络流量。
 ### kubefay节点内流量
 <div align="center">
-
-![节点内流量](./doc/imgs/flow-intra-node.png#w50)
-
+<img src="./doc/imgs/flow-intra-node.png" width="50%">
 </div>
-
 
 如图，同一节点内网络流量有三类：
 - 同一子网下Pod间流量，如Pod1A与Pod1B间流量。此类流量将通过br-int交换机直接二层转发。
@@ -144,8 +139,9 @@ spec:
 
 ### kubefay节点间流量
 <div align="center">
-
-![节点间流量](./doc/imgs/flow-inter-node.png#w80)
+<!-- 
+![节点间流量](./doc/imgs/flow-inter-node.png#w80) -->
+<img src="./doc/imgs/flow-inter-node.png" width="80%">
 
 </div>
 不同节点间的Pod流量有两种：
@@ -171,25 +167,3 @@ spec:
 [MIT © kubefay](./LICENSE) 
 
 [Apache 2 - 部分Antrea代码](https://github.com/antrea-io/antrea/blob/main/LICENSE)
-
-<style>
-img[src*="#w80"] {
-width: 80%;
-}
-
-img[src*="#w60"] {
-width: 60%;
-}
-
-img[src*="#w50"] {
-width: 50%;
-}
-
-img[src*="#w30"] {
-width: 30%;
-}
-
-img[src*="#w20"] {
-width: 20%;
-}
-</style>
