@@ -2,6 +2,7 @@
 
 [![license](https://img.shields.io/github/license/kubefay/kubefay)](LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![CI](https://github.com/kubefay/kubefay/actions/workflows/main.yml/badge.svg)](https://github.com/kubefay/kubefay/actions/workflows/main.yml)
 
 Virtual network solution for K8s based on OVS.
 
@@ -10,7 +11,6 @@ Virtual network solution for K8s based on OVS.
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
-- [API](#api)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -18,7 +18,7 @@ Virtual network solution for K8s based on OVS.
 kubefay is a network solution for [kubernetes](https://kubernetes.io/docs/home/). Before using Kubefay, please first familiarize with K8s and understand [CNI](https://github.com/containernetworking/cni).
 
 ### Naming of kubefay
-The name Kubefay comes from [Chang'e](https://en.wikipedia.org/wiki/Chang%27e), an ancient Chinese mythological figure. Chang'e longed for a beautiful paradise, and finally became a fairy in the Moon Palace through hard work. Network virtualization is also a fascinating field, and Kubefay will rush to the heaven of network virtualization!
+The name Kubefay comes from [Chang'e](https://en.wikipedia.org/wiki/Chang%27e), an ancient Chinese mythological figure. Chang'e longed for a beautiful paradise, and finally became a fairy in the Moon Palace through hard work. Network virtualization is also a fascinating field, which is the destination for kubefay as paradise for Chang'e.
 
 ### Why Kubefay
 
