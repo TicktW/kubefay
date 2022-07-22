@@ -91,3 +91,6 @@ kindCluster:
 podProbe: false
 
 devEnv: true
+
+cniConf: /etc/cni/net.d
+cniBin: /opt/cni/bin

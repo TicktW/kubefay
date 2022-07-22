@@ -213,10 +213,10 @@ spec:
             name: kubefay-config
         - name: host-cni-conf
           hostPath:
-            path: /etc/cni/net.d
+            path: {{ .Values.cniConf }}
         - name: host-cni-bin
           hostPath:
-            path: /opt/cni/bin
+            path: {{ .Values.cniBin }}
         - name: host-proc
           hostPath:
             path: /proc
