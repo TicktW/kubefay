@@ -5,8 +5,8 @@
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![CI](https://github.com/kubefay/kubefay/actions/workflows/main.yml/badge.svg)](https://github.com/kubefay/kubefay/actions/workflows/main.yml)
 [![commit status](https://img.shields.io/github/commit-activity/m/kubefay/kubefay)](https://github.com/kubefay/kubefay)
-[![code size](https://img.shields.io/github/languages/code-size/kubefay/kubefay)](https://github.com/kubefay/kubefay)
-[![file count](https://img.shields.io/github/directory-file-count/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+<!-- [![code size](https://img.shields.io/github/languages/code-size/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+[![file count](https://img.shields.io/github/directory-file-count/kubefay/kubefay)](https://github.com/kubefay/kubefay) -->
 
 
 

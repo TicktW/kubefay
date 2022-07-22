@@ -5,8 +5,8 @@
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![CI](https://github.com/kubefay/kubefay/actions/workflows/main.yml/badge.svg)](https://github.com/kubefay/kubefay/actions/workflows/main.yml)
 [![commit status](https://img.shields.io/github/commit-activity/m/kubefay/kubefay)](https://github.com/kubefay/kubefay)
-[![code size](https://img.shields.io/github/languages/code-size/kubefay/kubefay)](https://github.com/kubefay/kubefay)
-[![file count](https://img.shields.io/github/directory-file-count/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+<!-- [![code size](https://img.shields.io/github/languages/code-size/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+[![file count](https://img.shields.io/github/directory-file-count/kubefay/kubefay)](https://github.com/kubefay/kubefay) -->
 
 ## Document Language
 [[English](./README.md)]
@@ -150,7 +150,7 @@ As you can see, there are three types of network traffic within the same node:
 <div align="center">
 <!-- 
 ![节点间流量](./doc/imgs/flow-inter-node.png#w80) -->
-<img src="./doc/imgs/flow-inter-node.png" width="70%">
+<img src="./doc/imgs/flow-inter-node.png" width="80%">
 </div>
 
 There are two types of pod traffic between different nodes:
