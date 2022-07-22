@@ -1,10 +1,14 @@
 # kubefay
+### Kubernets环境下的基于OVS的半虚拟网络解决方案。
+<br/>
 
-[![license](https://img.shields.io/github/license/kubefay/kubefay)](LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![CI](https://github.com/kubefay/kubefay/actions/workflows/main.yml/badge.svg)](https://github.com/kubefay/kubefay/actions/workflows/main.yml)
+[![commit status](https://img.shields.io/github/commit-activity/m/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+[![code size](https://img.shields.io/github/languages/code-size/kubefay/kubefay)](https://github.com/kubefay/kubefay)
+[![file count](https://img.shields.io/github/directory-file-count/kubefay/kubefay)](https://github.com/kubefay/kubefay)
 
-Kubernets环境下的基于OVS的半虚拟网络解决方案。
+
 
 ## 目录
 
@@ -12,6 +16,7 @@ Kubernets环境下的基于OVS的半虚拟网络解决方案。
 - [安装](#安装)
 - [使用](#使用)
 - [参与项目](#参与项目)
+- [展望](#展望)
 - [开源许可](#开源许可)
 
 ## 简介
@@ -60,7 +65,7 @@ spec:
   ipVersion: v4
   cidr: 10.192.0.0/16
 ```
-即子网为IPv4协议，IP地址范围是10.192.0.0/16。Kubefay默认将子网中的第一个地址，即10.192.0.1作为子网默认网关。默认子网参数可于build/helm/kubefay/defaultnet/subnet.yaml配置。
+默认子网为IPv4协议，IP地址范围是10.192.0.0/16。Kubefay默认将子网中的第一个地址，即10.192.0.1作为子网默认网关。默认子网参数可于build/helm/kubefay/defaultnet/subnet.yaml配置。
 
 ### 新建子网络
 除默认子网外，用户可新建设自定义子网络。
@@ -154,7 +159,7 @@ spec:
 ### issue
 [提出bug、新功能](https://github.com/kubefay/kubefay/issues/new)
 
-### pull request
+### Pull request
 1. fork项目
 2. 添加新功能或解决bug
 3. 合并commit历史为一个
@@ -163,6 +168,9 @@ spec:
 6. 通过CI测试
 7. code review
 8. 并入master分支
+
+## 展望
+[展望](https://github.com/kubefay/kubefay/milestones)
 
 ## 开源许可
 [Apache 2 © kubefay](./LICENSE) 
