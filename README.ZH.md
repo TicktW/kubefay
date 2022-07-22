@@ -124,13 +124,13 @@ spec:
 
 ### kubefay网络设备
 <div align="center">
-<img src="./doc/imgs/pod-interface.png" width="40%">
+<img src="./doc/imgs/pod-interface.png" width="35%">
 </div>
 
 如上图，kubefay中每个Node上存在一个OVS虚拟交换机br-int，Pod通过veth pair设备连接至br-int。gw0接口是所有子网公用的网关接口，配置所有子网的网关IP地址。tun0接口用于封装不同Node间Pod通信的Overlay网络流量。
 ### kubefay节点内流量
 <div align="center">
-<img src="./doc/imgs/flow-intra-node.png" width="40%">
+<img src="./doc/imgs/flow-intra-node.png" width="35%">
 </div>
 
 如图，同一节点内网络流量有三类：
@@ -142,7 +142,7 @@ spec:
 <div align="center">
 <!-- 
 ![节点间流量](./doc/imgs/flow-inter-node.png#w80) -->
-<img src="./doc/imgs/flow-inter-node.png" width="60%">
+<img src="./doc/imgs/flow-inter-node.png" width="65%">
 
 </div>
 不同节点间的Pod流量有两种：
