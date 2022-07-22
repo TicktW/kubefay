@@ -23,8 +23,9 @@ kubefay是[kubernetes/k8s](https://kubernetes.io/docs/home/)下的网络解决�
 - 静态IP支持
 - 虚拟化网络拓扑
 
+
 ### 与其他CNI相比
-基于OVS的CNI网络插件有Kube-OVN和Antrea.
+基于OVS的常用CNI网络插件包括Kube-OVN和Antrea.
 
 Kube-OVN是灵雀云开源的网络插件。该插件具有命名空间隔离的子网管理机制，功能强大。由于引入了完整的SDN控制器OVN，Kube-OVN的性能相对较弱，网络流表复杂，运维困难。
 
@@ -33,7 +34,11 @@ Antrea由VMware研发并开源，性能较好，但功能相对单一。采用OV
 kubefay力求在两者之间寻找平衡点，既有Antrea的性能，也具备Kube-OVN的部分功能。kubefay基于Antrea的OVS及openflow库开发，构建适合云原生场景的半虚拟化网络，提供较为灵活的网络拓扑和IP地址管理能力。
 
 ### 初步了解kubefay网络
-![逻辑网络](./doc/imgs/logical-network.png#pic_center){:height="50%" width="50%"}
+<div align="center">
+
+![逻辑网络](./doc/imgs/logical-network.png#w60)
+
+</div>
 如上图所示，kubefay中Subnet可以关联一个或者多个Namespace，同一Subnet下的Namespace中的Pod处于同一局域网落下（二层可达）。不同Subnet通过逻辑路由器转发路由形成k8s的内部网络。k8s的内部网络亦通过逻辑路由与外部网络连接。
 
 ## 安装
@@ -59,7 +64,7 @@ spec:
 即子网为IPv4协议，IP地址范围是10.192.0.0/16。Kubefay默认将子网中的第一个地址，即10.192.0.1作为子网默认网关。默认子网参数可于build/helm/kubefay/defaultnet/subnet.yaml配置。
 
 ### 新建子网络
-除默认子网外，用户可新疆自定义子网络。
+除默认子网外，用户可新建设自定义子网络。
 1 新建子网资源。举个栗子，下边的配置可生成名为newnet的子网，子网IP地址池为10.182.0.0/16。
 ```
 apiVersion: kubefay.kubefay.github.com/v1alpha1
@@ -70,7 +75,7 @@ spec:
   ipVersion: v4
   cidr: 10.182.0.0/16
 ```
-2 子网生抽，还需新建Namespace并关联至子网。以下配置创建了kubefay-test Namespace，并将其关联至newnet子网。此后，kubefay-test下所有Pod从属于newnet子网。
+2 子网生成后，还需新建Namespace并关联至子网。以下配置创建了kubefay-test Namespace，并将其关联至newnet子网。此后，kubefay-test下所有Pod从属于newnet子网。
 ```
 apiVersion: v1
 kind: Namespace
@@ -118,31 +123,73 @@ spec:
  -->
 
 ### kubefay网络设备
-![网络设备介绍](./doc/imgs/pod-interface.png)
+<div align="center">
+
+![网络设备介绍](./doc/imgs/pod-interface.png#w50)
+
+</div>
 如上图，kubefay中每个Node上存在一个OVS虚拟交换机br-int，Pod通过veth pair设备连接至br-int。gw0接口是所有子网公用的网关接口，配置所有子网的网关IP地址。tun0接口用于封装不同Node间Pod通信的Overlay网络流量。
 ### kubefay节点内流量
-![节点内流量](./doc/imgs/flow-intra-node.png)
+<div align="center">
+
+![节点内流量](./doc/imgs/flow-intra-node.png#w50)
+
+</div>
+
+
 如图，同一节点内网络流量有三类：
 - 同一子网下Pod间流量，如Pod1A与Pod1B间流量。此类流量将通过br-int交换机直接二层转发。
 - 不同子网下Pod间流量，如Pod1A与Pod2A间流量。此类流量将首先转发至gw网关接口进入Node1。之后Node1主机将流量路由转发回br-int交换机转发至对应端口。
 - Pod和外部网络间流量，如Pod1A访问互联网的流量。此类流量将转发至gw网关到Node1节点，由Node1节点NAT至外部网络。
 
 ### kubefay节点间流量
-![节点间流量](./doc/imgs/flow-inter-node.png)
+<div align="center">
+
+![节点间流量](./doc/imgs/flow-inter-node.png#w80)
+
+</div>
 不同节点间的Pod流量有两种：
 - 同一子网下不同Node下的Pod流量，如Pod1A与Pod1C间流量。该类流量由br-int转发至tun口，封装为Overlay流量后转发至对端tun0口。流量解封装后转发至对应端口。
 - 不同子网下不同Node节点下Pod流量，如Pod1A与Pod1C间流量。该类流量首先由Nod1节点路由，此后再封装、解封装、转发至对端。
 
 ## 参与项目
+
 ### issue
 [提出bug、新功能](https://github.com/kubefay/kubefay/issues/new)
-### pr
-1 fork项目
-2 添加新功能或解决bug
-3 合并commit历史为一个
-4 pull最新master分支，rebase
-5 处理冲突并提交pr
-6 通过
+
+### pull request
+1. fork项目
+2. 添加新功能或解决bug
+3. 合并commit历史为一个
+4. pull最新master分支，rebase
+5. 处理冲突并提交pr
+6. 通过CI测试
+7. code review
+8. 并入master分支
 
 ## 开源许可
-[MIT © kubefay](./LICENSE)
+[MIT © kubefay](./LICENSE) 
+
+[Apache 2 - 部分Antrea代码](https://github.com/antrea-io/antrea/blob/main/LICENSE)
+
+<style>
+img[src*="#w80"] {
+width: 80%;
+}
+
+img[src*="#w60"] {
+width: 60%;
+}
+
+img[src*="#w50"] {
+width: 50%;
+}
+
+img[src*="#w30"] {
+width: 30%;
+}
+
+img[src*="#w20"] {
+width: 20%;
+}
+</style>
