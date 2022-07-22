@@ -33,7 +33,7 @@ Antrea由VMware研发并开源，性能较好，但功能相对单一。采用OV
 kubefay力求在两者之间寻找平衡点，既有Antrea的性能，也具备Kube-OVN的部分功能。kubefay基于Antrea的OVS及openflow库开发，构建适合云原生场景的半虚拟化网络，提供较为灵活的网络拓扑和IP地址管理能力。
 
 ### 初步了解kubefay网络
-![逻辑网络](./doc/imgs/logical-network.png)
+![逻辑网络](./doc/imgs/logical-network.png#pic_center){:height="50%" width="50%"}
 如上图所示，kubefay中Subnet可以关联一个或者多个Namespace，同一Subnet下的Namespace中的Pod处于同一局域网落下（二层可达）。不同Subnet通过逻辑路由器转发路由形成k8s的内部网络。k8s的内部网络亦通过逻辑路由与外部网络连接。
 
 ## 安装
