@@ -45,7 +45,7 @@ Kubefay tries to strike a balance between the performance of Antrea and some of 
 
 ### Understanding kubefay network
 <div align="center">
-<img src="./doc/imgs/logical-network.png" width="40%">
+<img src="./doc/imgs/logical-network.png" width="50%">
 </div>
 
 As shown in the figure above, a Subnet in Kubefay can associate one or more Namespaces, and Pods in a Namespace under the same Subnet falls under the same Lan (two layer network reachable). Different subnets are routed through a logical router. The network of K8s is also connected to the external network through logical routing.
@@ -131,14 +131,14 @@ spec:
 
 ### Network devices of kubefay
 <div align="center">
-<img src="./doc/imgs/pod-interface.png" width="35%">
+<img src="./doc/imgs/pod-interface.png" width="45%">
 </div>
 
 As shown above, there is an OVS virtual switch br-int on each Node in Kubefay, and the Pods connect to br-int via the veth pair device. The gw0 interface is the gateway interface common to all subnets with gateway Ip addresses for all subnets. The tun0 interface is used to encapsulate Overlay network traffic for Pod communication between different nodes.
 
 ### Network flow intra Node
 <div align="center">
-<img src="./doc/imgs/flow-intra-node.png" width="35%">
+<img src="./doc/imgs/flow-intra-node.png" width="45%">
 </div>
 
 As you can see, there are three types of network traffic within the same node:
@@ -150,7 +150,7 @@ As you can see, there are three types of network traffic within the same node:
 <div align="center">
 <!-- 
 ![节点间流量](./doc/imgs/flow-inter-node.png#w80) -->
-<img src="./doc/imgs/flow-inter-node.png" width="65%">
+<img src="./doc/imgs/flow-inter-node.png" width="70%">
 </div>
 
 There are two types of pod traffic between different nodes:
