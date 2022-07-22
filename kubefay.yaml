@@ -1,22 +1,263 @@
 ---
+# Source: kubefay/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubefay-agent
+  namespace: kube-system
+---
+# Source: kubefay/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubefay-config
+  namespace: kube-system
+data:
+  kubefay-agent.conf: ""
+  kubefay-cni.conflist: |
+    {
+        "cniVersion":"0.3.0",
+        "name": "kubefay",
+        "plugins": [
+            {
+                "type": "kubefay-cni",
+                "ipam": {
+                    "type": "kubefay-ipam-cni"
+                }
+            },
+            {
+                "type": "portmap",
+                "capabilities": {"portMappings": true}
+            },
+            {
+                "type": "bandwidth",
+                "capabilities": {"bandwidth": true}
+            }
+        ]
+    }
+---
+# Source: kubefay/templates/crds.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: subnets.kubefay.kubefay.github.com
+spec:
+  group: kubefay.kubefay.github.com
+  names:
+    kind: SubNet
+    listKind: SubNetList
+    plural: subnets
+    singular: subnet
+    shortNames:
+    - sn
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                cidr:
+                  type: string
+                dns:
+                  type: string
+                externalIPs:
+                  type: array
+                  items:
+                    type: string
+                gateway:
+                  type: string
+                ipVersion:
+                  type: string
+                lastReservedIP:
+                  type: string
+                namespaces:
+                  type: array
+                  items:
+                    type: string
+                unusedPool:
+                  type: array
+                  items:
+                    type: string
+                usedPool:
+                  type: object
+                  additionalProperties:
+                    type: string
+            status:
+                type: object
+                properties:
+                    poolStatus:
+                      type: string
+                    ipamEvent:
+                      type: string
+---
+# Source: kubefay/templates/serviceaccount.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kubefay-agent
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - endpoints
+      - services
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - watch
+      - list
+      - create
+      - update
+  - apiGroups:
+      - clusterinformation.kubefay.tanzu.vmware.com
+    resources:
+      - kubefayagentinfos
+    verbs:
+      - get
+      - create
+      - update
+      - delete
+  - apiGroups:
+      - controlplane.kubefay.tanzu.vmware.com
+      - networking.kubefay.tanzu.vmware.com
+    resources:
+      - networkpolicies
+      - appliedtogroups
+      - addressgroups
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - controlplane.kubefay.tanzu.vmware.com
+    resources:
+      - nodestatssummaries
+    verbs:
+      - create
+  - apiGroups:
+      - controlplane.kubefay.tanzu.vmware.com
+    resources:
+      - networkpolicies/status
+    verbs:
+      - create
+      - get
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+  # This is the content of built-in role kube-system/extension-apiserver-authentication-reader.
+  # But it doesn't have list/watch permission before K8s v1.17.0 so the extension apiserver (kubefay-agent) will
+  # have permission issue after bumping up apiserver library to a version that supports dynamic authentication.
+  # See https://github.com/kubernetes/kubernetes/pull/85375
+  # To support K8s clusters older than v1.17.0, we grant the required permissions directly instead of relying on
+  # the extension-apiserver-authentication role.
+  - apiGroups:
+      - ""
+    resourceNames:
+      - extension-apiserver-authentication
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - kubefay-ca
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - ops.kubefay.tanzu.vmware.com
+    resources:
+      - traceflows
+      - traceflows/status
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+  - apiGroups:
+      - kubefay.kubefay.github.com
+    resources:
+      - subnets
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+---
+# Source: kubefay/templates/serviceaccount.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kubefay-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubefay-agent
+subjects:
+  - kind: ServiceAccount
+    name: kubefay-agent
+    namespace: kube-system
+---
+# Source: kubefay/templates/agent.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kubefay-agent
-  namespace: {{ .Values.namespace }}
+  namespace: kube-system
   labels:
     component: kubefay-agent
 spec:
   selector:
     matchLabels:
       component: kubefay-agent
-  {{- if not .Values.kindCluster.enabled }}
   updateStrategy:
     type: RollingUpdate
-  {{- else }}
-  updateStrategy:
-    type: OnDelete
-  {{- end }}
   template:
     metadata:
       labels:
@@ -39,16 +280,12 @@ spec:
       serviceAccountName: kubefay-agent
       initContainers:
         - name: install-cni
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "kubefay/kubefay-ubuntu:latest"
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: "100m"
-          {{- if not .Values.kindCluster.enabled }}
           command: ["install_cni"]
-          {{- else }}
-          command: ["install_cni_kind"]
-          {{- end }}
           securityContext:
             capabilities:
               add:
@@ -76,17 +313,14 @@ spec:
             mountPath: /var/run/kubefay
       containers:
         - name: kubefay-agent
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "kubefay/kubefay-ubuntu:latest"
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: "200m"
           command: ["kubefay-agent"]
           # Log to both "/var/log/kubefay/" and stderr (so "kubectl logs" can work).
           # args: ["--config", "/etc/kubefay/kubefay-agent.conf", "--logtostderr=false", "--log_dir=/var/log/kubefay", "--alsologtostderr", "--log_file_max_size=100", "--log_file_max_num=4", "--v=0"]
-          {{- if .Values.kindCluster.enabled}}
-          args: ["--v=5", "--datapath_type=netdev"]
-          {{- end }}
           env:
             # Provide pod and node information for clusterinformation CRD.
             - name: POD_NAME
@@ -105,28 +339,6 @@ spec:
             - containerPort: 10350
               name: api
               protocol: TCP
-          {{- if .Values.podProbe }}
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - container_liveness_probe agent
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
-            periodSeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              host: 127.0.0.1
-              path: /healthz
-              port: api
-              scheme: HTTPS
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
-            periodSeconds: 10
-            failureThreshold: 5
-          {{- end }}
           securityContext:
             # kubefay-agent needs to perform sysctl configuration.
             privileged: true
@@ -163,16 +375,12 @@ spec:
           - name: xtables-lock
             mountPath: /run/xtables.lock
         - name: kubefay-ovs
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "kubefay/kubefay-ubuntu:latest"
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: "200m"
-          {{- if not .Values.kindCluster.enabled }}
           command: ["start_ovs"]
-          {{- else }}
-          command: ["start_ovs_netdev"]
-          {{- end }}
           args: ["--log_file_max_size=100", "--log_file_max_num=4"]
           securityContext:
             # capabilities required by OVS daemons
@@ -182,20 +390,6 @@ spec:
                 - NET_ADMIN
                 - SYS_ADMIN
                 - IPC_LOCK
-          {{- if .Values.podProbe }}
-          livenessProbe:
-            exec:
-              # docker CRI doesn't honor timeoutSeconds, add "timeout" to the command as a workaround.
-              # https://github.com/kubernetes/kubernetes/issues/51901
-              command:
-                - /bin/sh
-                - -c
-                - timeout 10 container_liveness_probe ovs
-            initialDelaySeconds: 5
-            timeoutSeconds: 10
-            periodSeconds: 10
-            failureThreshold: 5
-          {{- end }}
           volumeMounts:
           - name: host-var-run-kubefay
             mountPath: /var/run/openvswitch
@@ -203,20 +397,16 @@ spec:
           - name: host-var-log-kubefay
             mountPath: /var/log/openvswitch
             subPath: openvswitch
-          {{- if .Values.kindCluster.enabled }}
-          - name: dev-tun
-            mountPath: /dev/net/tun
-          {{- end }}
       volumes:
         - name: kubefay-config
           configMap:
             name: kubefay-config
         - name: host-cni-conf
           hostPath:
-            path: {{ .Values.cniConf }}
+            path: /etc/cni/net.d
         - name: host-cni-bin
           hostPath:
-            path: {{ .Values.cniBin }}
+            path: /opt/cni/bin
         - name: host-proc
           hostPath:
             path: /proc
@@ -244,9 +434,3 @@ spec:
           hostPath:
             path: /run/xtables.lock
             type: FileOrCreate
-        {{- if .Values.kindCluster.enabled }}
-        - name: dev-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice
-        {{- end }}
