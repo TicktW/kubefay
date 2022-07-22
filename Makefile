@@ -249,7 +249,7 @@ minikube-img-reload:
 
 .PHONY: minikube-cluster
 minikube-cluster:
-	minikube start --driver='kvm2' --registry-mirror=https://registry.docker-cn.com --image-mirror-country=cn --extra-config=kubelet.cgroup-driver=systemd --kubernetes-version=v1.18.8 -n 1 --cni=kubefay.yaml
+	minikube start --driver='kvm2' --registry-mirror=https://registry.docker-cn.com --image-mirror-country cn --extra-config=kubelet.cgroup-driver=systemd --extra-config=kubelet.cni-conf-dir=/etc/cni/net.d --kubernetes-version=v1.18.8 -n 1 --container-runtime='containerd' -v 4
 
 .PHONY: minikube-dev-round
 minikube-dev-round:
