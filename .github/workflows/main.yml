@@ -76,7 +76,7 @@ jobs:
 
       - uses: nick-fields/retry@v2
         with:
-          timeout_seconds: 15
+          timeout_minutes: 60
           max_attempts: 3
           retry_on: error
           command: GITHUB_ACTION=true make test-e2e
